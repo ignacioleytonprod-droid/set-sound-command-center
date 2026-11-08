@@ -130,21 +130,26 @@
 
       <section class="panel mt-5 overflow-hidden rounded-2xl" aria-labelledby="assistant-title">
         <div class="flex flex-col gap-3 border-b border-slate-800 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-          <div><p class="tech text-xs tracking-[.2em] text-cyan">AI_INTERFACE <span class="text-slate-600">//</span> API SEGURA</p><h2 id="assistant-title" class="mt-1 text-lg font-semibold text-white">Asistente de producción</h2><p class="mt-1 max-w-2xl text-xs leading-relaxed text-slate-400">Envía consultas a Gemini o Claude a través de tu propio backend. Este sitio estático no guarda claves ni inicia sesión en tus cuentas personales.</p></div>
+          <div><p class="tech text-xs tracking-[.2em] text-cyan">AI_INTERFACE <span class="text-slate-600">//</span> ACCESO PRIVADO</p><h2 id="assistant-title" class="mt-1 text-lg font-semibold text-white">Asistente de producción</h2><p class="mt-1 max-w-2xl text-xs leading-relaxed text-slate-400">Ingresa la contraseña privada configurada por el administrador en Render. No es la clave API de Gemini o Claude.</p></div>
           <label class="flex items-center gap-2 text-xs text-slate-400" for="provider">MODELO
             <select id="provider" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="gemini">Gemini</option><option value="claude">Claude</option></select>
           </label>
         </div>
         <div id="chat-log" class="chat-scroll flex max-h-72 min-h-28 flex-col gap-3 overflow-y-auto p-4 sm:p-5" aria-live="polite" aria-label="Conversación">
-          <div class="max-w-3xl rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-300"><span class="tech mr-2 text-cyan">SYSTEM</span>El asistente se conectará cuando terminemos de proteger y configurar el backend.</div>
+          <div class="max-w-3xl rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-300"><span class="tech mr-2 text-cyan">SYSTEM</span>El acceso privado protege el uso del asistente. La contraseña no se guarda de forma permanente.</div>
         </div>
         <form id="chat-form" class="border-t border-slate-800 bg-slate-950/40 p-3 sm:p-4">
+          <div class="mb-3 flex flex-col gap-2 sm:flex-row">
+            <label class="sr-only" for="access-password">Contraseña privada del dashboard</label>
+            <input id="access-password" type="password" autocomplete="current-password" placeholder="Contraseña privada del dashboard" class="min-h-[44px] flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500">
+            <button id="save-access" type="button" class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-300 hover:border-cyan/40 hover:text-cyan">Usar contraseña en esta pestaña</button>
+          </div>
           <label class="sr-only" for="prompt">Escribe una consulta para el asistente</label>
           <div class="flex flex-col gap-2 sm:flex-row">
             <textarea id="prompt" rows="2" maxlength="4000" placeholder="Ej.: Ayúdame a preparar una checklist de producción..." class="min-h-[48px] flex-1 resize-y rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white placeholder:text-slate-500" required></textarea>
             <button id="send-btn" type="submit" class="rounded-xl border border-cyan/40 bg-cyan/10 px-5 py-3 font-semibold text-cyan transition hover:bg-cyan/20 disabled:cursor-not-allowed disabled:opacity-50">Enviar consulta ↗</button>
           </div>
-          <p id="api-status" class="mt-2 text-[11px] text-orange" role="status">La conexión del chat se activará después de proteger el acceso al backend.</p>
+          <p id="api-status" class="mt-2 text-[11px] text-orange" role="status">El asistente requiere la contraseña privada configurada en Render y una clave API del proveedor elegido.</p>
         </form>
       </section>
     </main>
@@ -152,7 +157,7 @@
     <footer class="panel glow-orange mt-5 flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-3">
         <div class="flex h-7 items-center gap-1" aria-hidden="true"><i class="wave w-1 rounded-full bg-orange"></i><i class="wave w-1 rounded-full bg-cyan"></i><i class="wave w-1 rounded-full bg-orange"></i><i class="wave w-1 rounded-full bg-cyan"></i><i class="wave w-1 rounded-full bg-orange"></i></div>
-        <div><p class="tech text-xs text-slate-400">COMMAND CORE <span class="text-cyan">/ READY</span></p><p class="text-xs text-slate-500">Interfaz operativa · Conexión IA requiere backend seguro</p></div>
+        <div><p class="tech text-xs text-slate-400">COMMAND CORE <span class="text-cyan">/ READY</span></p><p class="text-xs text-slate-500">Interfaz operativa · Conexión IA protegida</p></div>
       </div>
       <div class="flex flex-wrap gap-2">
         <a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan/40 hover:text-cyan">Abrir Gemini ↗</a>
@@ -163,19 +168,23 @@
   </div>
 
   <script>
-    // Do not add provider API keys to this public file. The endpoint points to the server only.
     const API_ENDPOINT = 'https://set-sound-command-center.onrender.com/api/chat';
+    const ACCESS_KEY = 'setsound-dashboard-access-v1';
     const CONVERSATION_KEY = 'setsound-command-conversation-v1';
     const clock = document.getElementById('clock');
     const syncTime = document.getElementById('sync-time');
     const log = document.getElementById('chat-log');
     const form = document.getElementById('chat-form');
     const promptInput = document.getElementById('prompt');
+    const passwordInput = document.getElementById('access-password');
+    const saveAccessButton = document.getElementById('save-access');
     const sendButton = document.getElementById('send-btn');
     const apiStatus = document.getElementById('api-status');
     let conversationId = null;
+    let accessPassword = '';
 
     try { conversationId = localStorage.getItem(CONVERSATION_KEY); } catch (_) { /* Storage is optional. */ }
+    try { accessPassword = sessionStorage.getItem(ACCESS_KEY) || ''; } catch (_) { /* Storage is optional. */ }
 
     function updateClock() {
       const now = new Date();
@@ -206,10 +215,29 @@
       apiStatus.className = `mt-2 text-[11px] ${isError ? 'text-orange' : 'text-slate-500'}`;
     }
 
+    saveAccessButton.addEventListener('click', () => {
+      const candidate = passwordInput.value;
+      if (!candidate) {
+        setApiStatus('Escribe la contraseña privada que configuraste en Render.', true);
+        passwordInput.focus();
+        return;
+      }
+      accessPassword = candidate;
+      try { sessionStorage.setItem(ACCESS_KEY, accessPassword); } catch (_) { /* Storage is optional. */ }
+      passwordInput.value = '';
+      setApiStatus('Contraseña guardada solo en esta pestaña del navegador.');
+    });
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const message = promptInput.value.trim();
       if (!message) return;
+      if (!accessPassword) {
+        setApiStatus('Primero escribe la contraseña privada y pulsa “Usar contraseña en esta pestaña”.', true);
+        passwordInput.focus();
+        return;
+      }
+
       const provider = document.getElementById('provider').value;
       addMessage('user', message);
       promptInput.value = '';
@@ -220,10 +248,19 @@
       try {
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessPassword}`
+          },
           body: JSON.stringify({ provider, message, conversationId })
         });
         const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          accessPassword = '';
+          try { sessionStorage.removeItem(ACCESS_KEY); } catch (_) { /* Storage is optional. */ }
+          setApiStatus('La contraseña no es correcta. Escríbela nuevamente.', true);
+          throw new Error('Acceso denegado. Revisa la contraseña privada.');
+        }
         if (!response.ok) throw new Error(data.error || `El servidor respondió ${response.status}.`);
         if (typeof data.reply !== 'string' || !data.reply.trim()) throw new Error('Respuesta inválida del backend.');
         addMessage('assistant', data.reply);
@@ -234,7 +271,9 @@
         setApiStatus(`Respuesta recibida de ${provider}.`);
       } catch (error) {
         addMessage('assistant', `No se pudo completar la consulta: ${error.message}`);
-        setApiStatus('Error de conexión. El backend debe protegerse y configurarse antes de activar el chat.', true);
+        if (!apiStatus.textContent.includes('contraseña no es correcta')) {
+          setApiStatus('El backend rechazó o no pudo completar la consulta. Verifica su configuración.', true);
+        }
       } finally {
         sendButton.disabled = false;
         sendButton.textContent = 'Enviar consulta ↗';
