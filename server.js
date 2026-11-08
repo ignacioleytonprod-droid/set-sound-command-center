@@ -1,18 +1,19 @@
 const express = require('express');
 const cors = require('cors');
+const crypto = require('node:crypto');
 const { rateLimit } = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://ignacioleytonprod-droid.github.io,http://localhost:3000,http://127.0.0.1:5500')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://ignacioleytonprod-droid.github.io')
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean);
 
+app.set('trust proxy', 1);
 app.use(cors({
   origin(origin, callback) {
-    // Requests without an Origin header may be health checks or local tools.
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error('Origen no autorizado por CORS.'));
   }
@@ -26,6 +27,13 @@ const chatLimiter = rateLimit({
   legacyHeaders: false,
   message: { ok: false, error: 'Se alcanzó el límite temporal de consultas. Inténtalo más tarde.' }
 });
+
+function passwordsMatch(provided, expected) {
+  if (typeof provided !== 'string' || typeof expected !== 'string') return false;
+  const providedBuffer = Buffer.from(provided);
+  const expectedBuffer = Buffer.from(expected);
+  return providedBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(providedBuffer, expectedBuffer);
+}
 
 async function callGemini(message) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -82,6 +90,17 @@ app.get('/health', (_req, res) => {
 
 app.post('/api/chat', chatLimiter, async (req, res) => {
   try {
+    const expectedPassword = process.env.DASHBOARD_ACCESS_PASSWORD;
+    if (!expectedPassword) {
+      return res.status(503).json({ ok: false, error: 'El acceso privado aún no está configurado en el servidor.' });
+    }
+
+    const authorization = req.get('authorization') || '';
+    const providedPassword = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+    if (!passwordsMatch(providedPassword, expectedPassword)) {
+      return res.status(401).json({ ok: false, error: 'Contraseña de acceso incorrecta o no ingresada.' });
+    }
+
     const { provider, message, conversationId } = req.body || {};
     if (!['gemini', 'claude'].includes(provider)) {
       return res.status(400).json({ error: 'Proveedor inválido. Usa "gemini" o "claude".' });
