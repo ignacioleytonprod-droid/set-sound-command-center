@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0e17">
+  <meta name="description" content="Centro de comando operativo de Set & Sound Producciones SpA.">
+  <title>SET & SOUND | Central de Comando</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        carbon: '#0a0e17', panel: '#111827', cyan: '#00f0ff', orange: '#ff5500', green: '#00ff66', line: '#1f293d'
+      } } }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0a0e17; color: #e2e8f0; font-family: Inter, sans-serif; }
+    .tech { font-family: 'Share Tech Mono', monospace; }
+    .panel { background: linear-gradient(145deg, rgba(17,24,39,.96), rgba(10,14,23,.94)); border: 1px solid #1f293d; backdrop-filter: blur(12px); }
+    .glow-cyan { box-shadow: 0 0 22px rgba(0,240,255,.09); border-color: rgba(0,240,255,.32); }
+    .glow-orange { box-shadow: 0 0 22px rgba(255,85,0,.08); border-color: rgba(255,85,0,.3); }
+    .cell { transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+    .cell:hover { transform: translateY(-2px); border-color: rgba(0,240,255,.38); box-shadow: 0 8px 28px rgba(0,240,255,.06); }
+    .wave { height: 5px; animation: pulse-wave 1.15s ease-in-out infinite; }
+    .wave:nth-child(2) { animation-delay: .15s } .wave:nth-child(3) { animation-delay: .3s }
+    .wave:nth-child(4) { animation-delay: .45s } .wave:nth-child(5) { animation-delay: .6s }
+    @keyframes pulse-wave { 50% { height: 24px; opacity: .7; } }
+    .status-dot { box-shadow: 0 0 10px currentColor; }
+    .chat-scroll { scrollbar-color: #334155 #0f172a; scrollbar-width: thin; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #00f0ff; outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+    <header class="panel glow-cyan mb-6 flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+      <div class="flex items-center gap-3">
+        <div class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-cyan/30 bg-cyan/10 text-cyan" aria-hidden="true">
+          <span class="tech text-xl">S/S</span><span class="status-dot absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-green text-green"></span>
+        </div>
+        <div>
+          <p class="tech text-lg tracking-wider text-white">SET & SOUND <span class="text-cyan">PRODUCCIONES SpA</span></p>
+          <p class="text-xs text-slate-400">CENTRAL DE COMANDO <span class="px-1 text-slate-600">/</span> VALDIVIA</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+        <div class="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2">
+          <span class="status-dot h-2 w-2 rounded-full bg-green text-green" aria-hidden="true"></span>
+          <span class="tech text-xs text-green">ONLINE</span>
+          <span class="tech text-xs text-slate-400">[4 CÉLULAS ACT]</span>
+        </div>
+        <time id="clock" class="tech rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-cyan" aria-label="Hora actual">--:--:--</time>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
+        <div><p class="tech text-xs tracking-[.2em] text-cyan">SISTEMA OPERATIVO <span class="text-slate-600">//</span> VISTA GENERAL</p><h1 class="mt-1 text-xl font-semibold text-white sm:text-2xl">Estado de las células</h1></div>
+        <span class="tech text-xs text-slate-500">NODO: VALDIVIA-01</span>
+      </div>
+
+      <section class="grid grid-cols-1 gap-4 md:grid-cols-2" aria-label="Cuatro células operativas">
+        <article class="panel cell rounded-2xl p-5">
+          <div class="mb-4 flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+            <div><p class="tech text-xs text-slate-500">CELL_01</p><h2 class="tech mt-1 text-lg text-cyan">⚙ OPERACIONES</h2></div>
+            <span class="rounded-full border border-cyan/20 bg-cyan/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-cyan">LOGÍSTICA & TERRENO</span>
+          </div>
+          <div class="rounded-xl border border-slate-800 bg-slate-950/55 p-3.5">
+            <p class="tech text-[11px] tracking-wide text-slate-500">PRÓXIMO HITO</p>
+            <p class="mt-1 font-medium text-white">Evento · Espacio Estancilla</p>
+            <p class="mt-1 text-xs text-slate-400">Revisar fecha, disponibilidad y producción antes de publicar.</p>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Rider técnico</p><p class="mt-1 text-sm font-semibold text-green">✓ Validado</p></div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Inventario base</p><p class="mt-1 text-sm font-semibold text-cyan">Operativo</p></div>
+          </div>
+        </article>
+
+        <article class="panel cell glow-orange rounded-2xl p-5">
+          <div class="mb-4 flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+            <div><p class="tech text-xs text-slate-500">CELL_02</p><h2 class="tech mt-1 text-lg text-orange">◈ FINANZAS</h2></div>
+            <span class="rounded-full border border-orange/20 bg-orange/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-orange">CAJA & COSTOS</span>
+          </div>
+          <div class="rounded-xl border border-slate-800 bg-slate-950/55 p-3.5">
+            <p class="tech text-[11px] tracking-wide text-slate-500">CONTROL FINANCIERO</p>
+            <p class="mt-1 font-medium text-white">Proyecciones y presupuestos</p>
+            <p class="mt-1 text-xs text-slate-400">Información financiera reservada: consulta el sistema interno.</p>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Fondo imprevistos</p><p class="mt-1 text-sm font-semibold text-orange">Por confirmar</p></div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Documentación</p><p class="mt-1 text-sm font-semibold text-green">En seguimiento</p></div>
+          </div>
+        </article>
+
+        <article class="panel cell rounded-2xl p-5">
+          <div class="mb-4 flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+            <div><p class="tech text-xs text-slate-500">CELL_03</p><h2 class="tech mt-1 text-lg text-cyan">✦ COMUNICACIONES</h2></div>
+            <span class="rounded-full border border-cyan/20 bg-cyan/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-cyan">DISEÑO & MEDIA</span>
+          </div>
+          <div class="rounded-xl border border-slate-800 bg-slate-950/55 p-3.5">
+            <p class="tech text-[11px] tracking-wide text-slate-500">PROYECTOS DE MEDIOS</p>
+            <p class="mt-1 font-medium text-white">Kits comerciales y coordinación OOH</p>
+            <p class="mt-1 text-xs text-slate-400">Material de campaña y ubicaciones disponibles para uso interno.</p>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Modelo de negocio</p><p class="mt-1 text-sm font-semibold text-white">Fijo / mixto</p></div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Sede principal</p><p class="mt-1 text-sm font-semibold text-white">Espacio Estancilla</p></div>
+          </div>
+        </article>
+
+        <article class="panel cell rounded-2xl p-5">
+          <div class="mb-4 flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+            <div><p class="tech text-xs text-slate-500">CELL_04</p><h2 class="tech mt-1 text-lg text-orange">⌕ CONTROL DE PROTOCOLOS</h2></div>
+            <span class="rounded-full border border-orange/20 bg-orange/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-orange">CALIDAD & NORMAS</span>
+          </div>
+          <div class="space-y-3 rounded-xl border border-slate-800 bg-slate-950/55 p-3.5 text-sm">
+            <div class="flex items-center justify-between gap-3"><span class="text-slate-300">Riders técnicos</span><span class="text-green">✓ OK</span></div>
+            <div class="flex items-center justify-between gap-3"><span class="text-slate-300">Call sheets & timelines</span><span class="text-green">✓ OK</span></div>
+            <div class="flex items-center justify-between gap-3"><span class="text-slate-300">Normativa vial</span><span class="text-orange">En revisión</span></div>
+          </div>
+          <div class="mt-3 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/50 p-3"><span class="text-xs text-slate-400">Última verificación local</span><time id="sync-time" class="tech text-xs text-cyan">--:--:--</time></div>
+        </article>
+      </section>
+
+      <section class="panel mt-5 overflow-hidden rounded-2xl" aria-labelledby="assistant-title">
+        <div class="flex flex-col gap-3 border-b border-slate-800 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div><p class="tech text-xs tracking-[.2em] text-cyan">AI_INTERFACE <span class="text-slate-600">//</span> API SEGURA</p><h2 id="assistant-title" class="mt-1 text-lg font-semibold text-white">Asistente de producción</h2><p class="mt-1 max-w-2xl text-xs leading-relaxed text-slate-400">Envía consultas a Gemini o Claude a través de tu propio backend. Este sitio estático no guarda claves ni inicia sesión en tus cuentas personales.</p></div>
+          <label class="flex items-center gap-2 text-xs text-slate-400" for="provider">MODELO
+            <select id="provider" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="gemini">Gemini</option><option value="claude">Claude</option></select>
+          </label>
+        </div>
+        <div id="chat-log" class="chat-scroll flex max-h-72 min-h-28 flex-col gap-3 overflow-y-auto p-4 sm:p-5" aria-live="polite" aria-label="Conversación">
+          <div class="max-w-3xl rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-300"><span class="tech mr-2 text-cyan">SYSTEM</span>Configura el endpoint de tu backend en el código para habilitar las consultas. Las claves de Gemini/Claude deben permanecer en el servidor.</div>
+        </div>
+        <form id="chat-form" class="border-t border-slate-800 bg-slate-950/40 p-3 sm:p-4">
+          <label class="sr-only" for="prompt">Escribe una consulta para el asistente</label>
+          <div class="flex flex-col gap-2 sm:flex-row">
+            <textarea id="prompt" rows="2" maxlength="4000" placeholder="Ej.: Ayúdame a preparar una checklist de producción..." class="min-h-[48px] flex-1 resize-y rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white placeholder:text-slate-500" required></textarea>
+            <button id="send-btn" type="submit" class="rounded-xl border border-cyan/40 bg-cyan/10 px-5 py-3 font-semibold text-cyan transition hover:bg-cyan/20 disabled:cursor-not-allowed disabled:opacity-50">Enviar consulta ↗</button>
+          </div>
+          <p id="api-status" class="mt-2 text-[11px] text-orange" role="status">API no configurada: conecta tu backend para activar el chat.</p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="panel glow-orange mt-5 flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex h-7 items-center gap-1" aria-hidden="true"><i class="wave w-1 rounded-full bg-orange"></i><i class="wave w-1 rounded-full bg-cyan"></i><i class="wave w-1 rounded-full bg-orange"></i><i class="wave w-1 rounded-full bg-cyan"></i><i class="wave w-1 rounded-full bg-orange"></i></div>
+        <div><p class="tech text-xs text-slate-400">COMMAND CORE <span class="text-cyan">/ READY</span></p><p class="text-xs text-slate-500">Interfaz operativa · Conexión IA requiere backend seguro</p></div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan/40 hover:text-cyan">Abrir Gemini ↗</a>
+        <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-orange/40 hover:text-orange">Abrir Claude ↗</a>
+      </div>
+    </footer>
+    <p class="py-4 text-center text-[10px] text-slate-600">SET & SOUND PRODUCCIONES SpA · La información mostrada es referencial; no publiques datos internos sensibles.</p>
+  </div>
+
+  <script>
+    // Configure this with your HTTPS backend URL (for example, a Cloudflare Worker).
+    // Never put Gemini or Anthropic API keys in this file or in GitHub Pages.
+    const API_ENDPOINT = '';
+    const CONVERSATION_KEY = 'setsound-command-conversation-v1';
+    const clock = document.getElementById('clock');
+    const syncTime = document.getElementById('sync-time');
+    const log = document.getElementById('chat-log');
+    const form = document.getElementById('chat-form');
+    const promptInput = document.getElementById('prompt');
+    const sendButton = document.getElementById('send-btn');
+    const apiStatus = document.getElementById('api-status');
+    let conversationId = null;
+
+    try { conversationId = localStorage.getItem(CONVERSATION_KEY); } catch (_) { /* Storage is optional. */ }
+
+    function updateClock() {
+      const now = new Date();
+      const value = new Intl.DateTimeFormat('es-CL', { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now);
+      clock.textContent = value;
+      syncTime.textContent = value;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function addMessage(role, text) {
+      const bubble = document.createElement('div');
+      bubble.className = role === 'user'
+        ? 'ml-auto max-w-3xl whitespace-pre-wrap rounded-xl border border-slate-700 bg-slate-900 p-3 text-sm leading-relaxed text-white'
+        : 'max-w-3xl whitespace-pre-wrap rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-200';
+      const label = document.createElement('span');
+      label.className = role === 'user' ? 'tech mr-2 text-slate-400' : 'tech mr-2 text-cyan';
+      label.textContent = role === 'user' ? 'TÚ' : 'ASISTENTE';
+      const content = document.createElement('span');
+      content.textContent = text;
+      bubble.append(label, content);
+      log.appendChild(bubble);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function setApiStatus(message, isError = false) {
+      apiStatus.textContent = message;
+      apiStatus.className = `mt-2 text-[11px] ${isError ? 'text-orange' : 'text-slate-500'}`;
+    }
+
+    if (API_ENDPOINT) {
+      setApiStatus('Backend configurado. Las solicitudes se enviarán de forma segura al endpoint indicado.');
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const message = promptInput.value.trim();
+      if (!message) return;
+      if (!API_ENDPOINT) {
+        setApiStatus('El chat aún no está conectado. Configura API_ENDPOINT y despliega un backend con las claves guardadas como secretos.', true);
+        return;
+      }
+
+      const provider = document.getElementById('provider').value;
+      addMessage('user', message);
+      promptInput.value = '';
+      sendButton.disabled = true;
+      sendButton.textContent = 'Consultando…';
+      setApiStatus(`Enviando consulta a ${provider}…`);
+
+      try {
+        const response = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // Backend contract: accept { provider, message, conversationId } and return
+          // { reply, conversationId }. Keep provider allowlisted and keys server-side.
+          body: JSON.stringify({ provider, message, conversationId })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `El servidor respondió ${response.status}.`);
+        if (typeof data.reply !== 'string' || !data.reply.trim()) throw new Error('Respuesta inválida del backend. Se esperaba { reply }.');
+        addMessage('assistant', data.reply);
+        if (typeof data.conversationId === 'string') {
+          conversationId = data.conversationId;
+          try { localStorage.setItem(CONVERSATION_KEY, conversationId); } catch (_) { /* Storage is optional. */ }
+        }
+        setApiStatus(`Respuesta recibida de ${provider}.`);
+      } catch (error) {
+        addMessage('assistant', `No se pudo completar la consulta: ${error.message}`);
+        setApiStatus('Error de conexión. Revisa el backend, CORS y su configuración.', true);
+      } finally {
+        sendButton.disabled = false;
+        sendButton.textContent = 'Enviar consulta ↗';
+        promptInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>
