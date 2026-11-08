@@ -136,7 +136,7 @@
           </label>
         </div>
         <div id="chat-log" class="chat-scroll flex max-h-72 min-h-28 flex-col gap-3 overflow-y-auto p-4 sm:p-5" aria-live="polite" aria-label="Conversación">
-          <div class="max-w-3xl rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-300"><span class="tech mr-2 text-cyan">SYSTEM</span>Configura el endpoint de tu backend en el código para habilitar las consultas. Las claves de Gemini/Claude deben permanecer en el servidor.</div>
+          <div class="max-w-3xl rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-300"><span class="tech mr-2 text-cyan">SYSTEM</span>El asistente se conectará cuando terminemos de proteger y configurar el backend.</div>
         </div>
         <form id="chat-form" class="border-t border-slate-800 bg-slate-950/40 p-3 sm:p-4">
           <label class="sr-only" for="prompt">Escribe una consulta para el asistente</label>
@@ -144,7 +144,7 @@
             <textarea id="prompt" rows="2" maxlength="4000" placeholder="Ej.: Ayúdame a preparar una checklist de producción..." class="min-h-[48px] flex-1 resize-y rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white placeholder:text-slate-500" required></textarea>
             <button id="send-btn" type="submit" class="rounded-xl border border-cyan/40 bg-cyan/10 px-5 py-3 font-semibold text-cyan transition hover:bg-cyan/20 disabled:cursor-not-allowed disabled:opacity-50">Enviar consulta ↗</button>
           </div>
-          <p id="api-status" class="mt-2 text-[11px] text-orange" role="status">API no configurada: conecta tu backend para activar el chat.</p>
+          <p id="api-status" class="mt-2 text-[11px] text-orange" role="status">La conexión del chat se activará después de proteger el acceso al backend.</p>
         </form>
       </section>
     </main>
@@ -163,9 +163,8 @@
   </div>
 
   <script>
-    // Configure this with your HTTPS backend URL (for example, a Cloudflare Worker).
-    // Never put Gemini or Anthropic API keys in this file or in GitHub Pages.
-    const API_ENDPOINT = '';
+    // Do not add provider API keys to this public file. The endpoint points to the server only.
+    const API_ENDPOINT = 'https://set-sound-command-center.onrender.com/api/chat';
     const CONVERSATION_KEY = 'setsound-command-conversation-v1';
     const clock = document.getElementById('clock');
     const syncTime = document.getElementById('sync-time');
@@ -207,19 +206,10 @@
       apiStatus.className = `mt-2 text-[11px] ${isError ? 'text-orange' : 'text-slate-500'}`;
     }
 
-    if (API_ENDPOINT) {
-      setApiStatus('Backend configurado. Las solicitudes se enviarán de forma segura al endpoint indicado.');
-    }
-
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const message = promptInput.value.trim();
       if (!message) return;
-      if (!API_ENDPOINT) {
-        setApiStatus('El chat aún no está conectado. Configura API_ENDPOINT y despliega un backend con las claves guardadas como secretos.', true);
-        return;
-      }
-
       const provider = document.getElementById('provider').value;
       addMessage('user', message);
       promptInput.value = '';
@@ -231,13 +221,11 @@
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          // Backend contract: accept { provider, message, conversationId } and return
-          // { reply, conversationId }. Keep provider allowlisted and keys server-side.
           body: JSON.stringify({ provider, message, conversationId })
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || `El servidor respondió ${response.status}.`);
-        if (typeof data.reply !== 'string' || !data.reply.trim()) throw new Error('Respuesta inválida del backend. Se esperaba { reply }.');
+        if (typeof data.reply !== 'string' || !data.reply.trim()) throw new Error('Respuesta inválida del backend.');
         addMessage('assistant', data.reply);
         if (typeof data.conversationId === 'string') {
           conversationId = data.conversationId;
@@ -246,7 +234,7 @@
         setApiStatus(`Respuesta recibida de ${provider}.`);
       } catch (error) {
         addMessage('assistant', `No se pudo completar la consulta: ${error.message}`);
-        setApiStatus('Error de conexión. Revisa el backend, CORS y su configuración.', true);
+        setApiStatus('Error de conexión. El backend debe protegerse y configurarse antes de activar el chat.', true);
       } finally {
         sendButton.disabled = false;
         sendButton.textContent = 'Enviar consulta ↗';
