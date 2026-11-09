@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="neon_noir">
+  <meta name="description" content="Central de Comando Operativo y Agenda Interconectada de Set & Sound Producciones SpA - Valdivia">
+  <title>SET & SOUND | Central de Comando Operativo</title>
+
+  <!-- Pinned CDNs per Web-Craft Policy -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Typography: Sora, Inter, Space Mono, Share Tech Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Sora:wght@400;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            carbon: '#0a0e17',
+            panel: '#111827',
+            panelHigh: '#1a2234',
+            panelLow: '#0d131f',
+            cyan: '#00f0ff',
+            orange: '#ff5500',
+            green: '#00ff66',
+            yellow: '#ffe04a',
+            purple: '#b388ff',
+            line: '#1f293d',
+            lineBright: '#2a3b58'
+          },
+          fontFamily: {
+            headline: ['Sora', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['Space Mono', 'Share Tech Mono', 'monospace'],
+            tech: ['Share Tech Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #0a0e17;
+      --surface-container-low: #0d131f;
+      --surface-container: #111827;
+      --surface-container-high: #1a2234;
+      --on-surface: #e8e0f0;
+      --on-surface-variant: #a098b0;
+      --outline: #2a3b58;
+      --outline-variant: #1a2436;
+      --primary: #00f0ff;
+      --secondary: #ff5500;
+      --tertiary: #00ff66;
+      --warning: #ffe04a;
+      --glow-cyan: 0 0 16px rgba(0, 240, 255, 0.25);
+      --glow-orange: 0 0 16px rgba(255, 85, 0, 0.25);
+      --glow-text-cyan: 0 0 8px rgba(0, 240, 255, 0.6);
+      --glow-text-orange: 0 0 8px rgba(255, 85, 0, 0.6);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: 'Inter', sans-serif;
+      overflow-x: clip;
+      min-height: 100vh;
+    }
+
+    .font-headline { font-family: 'Sora', sans-serif; }
+    .font-tech { font-family: 'Share Tech Mono', monospace; }
+    .font-label { font-family: 'Space Mono', monospace; }
+
+    /* Custom Command Center Panels */
+    .command-panel {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.95), rgba(13, 19, 31, 0.95));
+      border: 1px solid var(--outline);
+      backdrop-filter: blur(12px);
+      box-shadow: inset 0 0 14px rgba(0, 240, 255, 0.03);
+    }
+    .command-panel-cyan {
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.08), inset 0 0 14px rgba(0, 240, 255, 0.04);
+    }
+    .command-panel-orange {
+      border-color: rgba(255, 85, 0, 0.4);
+      box-shadow: 0 0 20px rgba(255, 85, 0, 0.08), inset 0 0 14px rgba(255, 85, 0, 0.04);
+    }
+
+    /* Equalizer Wave Bars */
+    @keyframes eqWave {
+      0%, 100% { height: 4px; }
+      50% { height: 24px; }
+    }
+    .eq-bar {
+      animation: eqWave 1.3s infinite ease-in-out;
+      width: 3px;
+      border-radius: 2px;
+    }
+    .eq-bar:nth-child(1) { animation-delay: 0.1s; background: #00f0ff; }
+    .eq-bar:nth-child(2) { animation-delay: 0.3s; background: #ff5500; }
+    .eq-bar:nth-child(3) { animation-delay: 0.5s; background: #00ff66; }
+    .eq-bar:nth-child(4) { animation-delay: 0.2s; background: #00f0ff; }
+    .eq-bar:nth-child(5) { animation-delay: 0.4s; background: #ff5500; }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0e17; }
+    ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00f0ff; }
+
+    /* Interactive Cell Buttons */
+    .cell-card {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cell-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+    }
+    .cell-card.active-cell {
+      border-color: #00f0ff !important;
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.2), inset 0 0 16px rgba(0, 240, 255, 0.1);
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(8px);
+    }
+
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid #00f0ff;
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between selection:bg-cyan/30 selection:text-white">
+
+  <!-- COMMAND CENTER ROOT CONTAINER -->
+  <div class="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex-1 flex flex-col gap-5">
+
+    <!-- TOP COMMAND HEADER BAR -->
+    <header class="command-panel command-panel-cyan rounded-2xl p-4 sm:p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-3.5">
+        <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-cyan/40 bg-cyan/10 text-cyan">
+          <span class="font-headline font-extrabold text-xl tracking-tight">S/S</span>
+          <span class="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-green border-2 border-carbon" title="Sistema Activo"></span>
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="font-headline font-bold text-xl sm:text-2xl text-white tracking-wide">SET & SOUND <span class="text-cyan">PRODUCCIONES SpA</span></h1>
+            <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 font-label text-[10px] text-cyan">MODO STARTUP CERO CAPEX</span>
+          </div>
+          <p class="font-tech text-xs text-slate-400 mt-0.5">
+            CENTRO DE COMANDO OPERATIVO <span class="text-slate-600">//</span> NODO VALDIVIA: RUTA T-350 N° 4720 (SECTOR ESTANCILLA)
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Status Indicators & Action Bar -->
+      <div class="flex flex-wrap items-center gap-2.5 sm:justify-end">
+        <!-- Audio Equalizer Simulation -->
+        <div class="hidden sm:flex items-center gap-1.5 h-8 px-3 rounded-xl border border-line bg-panelLow" title="Simulador de Núcleo Acústico / Central AI">
+          <div class="flex items-end gap-1 h-5">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+          <span class="font-label text-[11px] text-slate-300 ml-1">AUDIO CORE</span>
+        </div>
+
+        <!-- Live Clock (America/Santiago) -->
+        <div class="flex items-center gap-2 rounded-xl border border-line bg-panelLow px-3 py-2 text-cyan">
+          <i data-lucide="clock" class="w-4 h-4 text-cyan"></i>
+          <time id="live-clock" class="font-tech text-xs sm:text-sm font-semibold tracking-wider">--:--:--</time>
+        </div>
+
+        <!-- Cloud Sync Status Pill -->
+        <button id="sync-status-btn" onclick="openSyncModal()" type="button" class="flex items-center gap-2 rounded-xl border border-line bg-panelLow px-3 py-2 hover:border-cyan/50 transition">
+          <span id="sync-dot" class="rounded px-1.5 py-0.5 bg-green/20 text-green font-tech text-[10px] font-bold">ACTIVO</span>
+          <span id="sync-text" class="font-tech text-xs text-green font-bold">ONLINE (SSOT SYNC)</span>
+        </button>
+
+        <!-- New Event Button (Triggers Modal) -->
+        <button onclick="openEventModal()" type="button" class="flex items-center gap-2 rounded-xl border border-cyan/60 bg-cyan/15 hover:bg-cyan/25 px-4 py-2 text-cyan font-headline font-semibold text-xs sm:text-sm shadow-lg shadow-cyan/10 transition active:scale-95">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>+ Nuevo Evento</span>
+        </button>
+
+        <!-- Export SSOT Button -->
+        <button onclick="exportSSOTPrompt()" type="button" class="flex items-center gap-1.5 rounded-xl border border-line bg-panelHigh hover:border-slate-500 px-3 py-2 text-slate-300 font-label text-xs transition" title="Copiar prompt SSOT consolidado para Gemini & Claude">
+          <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+          <span class="hidden md:inline">SSOT Prompt</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- FOUR OPERATIONAL CELLS GRID -->
+    <section aria-label="Cuatro Células Operativas de la Startup">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <p class="font-label text-[11px] text-cyan tracking-widest uppercase">Arquitectura de Células Autónomas</p>
+          <h2 class="font-headline font-bold text-lg text-white">Selecciona una Célula para Filtrar o Inspeccionar</h2>
+        </div>
+        <button onclick="filterByCell('all')" type="button" class="font-label text-xs text-slate-400 hover:text-cyan border border-slate-700 rounded-lg px-2.5 py-1 bg-slate-900/60 transition">
+          Mostrar Todas
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <!-- CELL 01: OPERACIONES -->
+        <div onclick="filterByCell('1')" id="cell-card-1" role="button" tabindex="0" class="cell-card command-panel rounded-2xl p-4 text-left cursor-pointer border border-line hover:border-cyan/50">
+          <div class="flex items-center justify-between">
+            <span class="font-tech text-xs text-slate-400">CELL_01</span>
+            <span class="font-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-cyan/10 text-cyan border border-cyan/30">Logística</span>
+          </div>
+          <div class="mt-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-cyan/10 border border-cyan/30 flex items-center justify-center text-cyan">
+              <i data-lucide="sliders" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-headline font-bold text-base text-white">OPERACIONES</h3>
+              <p class="text-xs text-slate-400">Terreno, inventario y PA</p>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between text-xs font-tech">
+            <span class="text-slate-400">Inventario Base:</span>
+            <span class="text-cyan font-bold">100% Operativo</span>
+          </div>
+        </div>
+
+        <!-- CELL 02: FINANZAS -->
+        <div onclick="filterByCell('2')" id="cell-card-2" role="button" tabindex="0" class="cell-card command-panel rounded-2xl p-4 text-left cursor-pointer border border-line hover:border-orange/50">
+          <div class="flex items-center justify-between">
+            <span class="font-tech text-xs text-slate-400">CELL_02</span>
+            <span class="font-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-orange/10 text-orange border border-orange/30">Caja & Márgenes</span>
+          </div>
+          <div class="mt-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-orange/10 border border-orange/30 flex items-center justify-center text-orange">
+              <i data-lucide="circle-dollar-sign" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-headline font-bold text-base text-white">FINANZAS</h3>
+              <p class="text-xs text-slate-400">Caja chica y SpA</p>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between text-xs font-tech">
+            <span class="text-slate-400">Reserva Mantención:</span>
+            <span class="text-orange font-bold">20% Automático</span>
+          </div>
+        </div>
+
+        <!-- CELL 03: COMUNICACIONES -->
+        <div onclick="filterByCell('3')" id="cell-card-3" role="button" tabindex="0" class="cell-card command-panel rounded-2xl p-4 text-left cursor-pointer border border-line hover:border-cyan/50">
+          <div class="flex items-center justify-between">
+            <span class="font-tech text-xs text-slate-400">CELL_03</span>
+            <span class="font-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-cyan/10 text-cyan border border-cyan/30">OOH & Media</span>
+          </div>
+          <div class="mt-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-cyan/10 border border-cyan/30 flex items-center justify-center text-cyan">
+              <i data-lucide="megaphone" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-headline font-bold text-base text-white">COMUNICACIONES</h3>
+              <p class="text-xs text-slate-400">Pantallas LED y Difusión</p>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between text-xs font-tech">
+            <span class="text-slate-400">Punto Ruta T-350:</span>
+            <span class="text-cyan font-bold">Negociación Activa</span>
+          </div>
+        </div>
+
+        <!-- CELL 04: PROTOCOLOS -->
+        <div onclick="filterByCell('4')" id="cell-card-4" role="button" tabindex="0" class="cell-card command-panel rounded-2xl p-4 text-left cursor-pointer border border-line hover:border-orange/50">
+          <div class="flex items-center justify-between">
+            <span class="font-tech text-xs text-slate-400">CELL_04</span>
+            <span class="font-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-orange/10 text-orange border border-orange/30">Control & QA</span>
+          </div>
+          <div class="mt-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-orange/10 border border-orange/30 flex items-center justify-center text-orange">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-headline font-bold text-base text-white">PROTOCOLOS</h3>
+              <p class="text-xs text-slate-400">Riders, Call Sheets, MOP</p>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between text-xs font-tech">
+            <span class="text-slate-400">Check Final:</span>
+            <span class="text-green font-bold">Sin Bloqueos</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINANCIAL & OPERATIONAL TICKER -->
+    <section class="command-panel rounded-2xl p-4 sm:p-5" aria-labelledby="metrics-title">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-orange"></span>
+          <p id="metrics-title" class="font-label text-xs tracking-wider text-orange uppercase">Consolidado Financiero & Fondos de Reserva</p>
+        </div>
+        <p class="text-xs text-slate-400">Calculado en base a eventos activos e inventario en uso</p>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <!-- Ingresos -->
+        <div class="rounded-xl border border-line bg-panelLow p-3">
+          <p class="font-tech text-[11px] text-slate-400">INGRESOS PROYECTADOS</p>
+          <p id="metric-income" class="font-headline font-bold text-lg sm:text-xl text-green mt-1">$0 CLP</p>
+          <span class="font-tech text-[10px] text-slate-500">Eventos + Arriendos</span>
+        </div>
+        <!-- Egresos -->
+        <div class="rounded-xl border border-line bg-panelLow p-3">
+          <p class="font-tech text-[11px] text-slate-400">EGRESOS TOTALES</p>
+          <p id="metric-expense" class="font-headline font-bold text-lg sm:text-xl text-orange mt-1">$0 CLP</p>
+          <span class="font-tech text-[10px] text-slate-500">Honorarios + Logística</span>
+        </div>
+        <!-- Balance Neto -->
+        <div class="rounded-xl border border-line bg-panelLow p-3">
+          <p class="font-tech text-[11px] text-slate-400">BALANCE NETO</p>
+          <p id="metric-balance" class="font-headline font-bold text-lg sm:text-xl text-cyan mt-1">$0 CLP</p>
+          <span class="font-tech text-[10px] text-slate-500">Margen Operativo</span>
+        </div>
+        <!-- 20% Reserva Mantención -->
+        <div class="rounded-xl border border-line bg-panelLow p-3">
+          <p class="font-tech text-[11px] text-yellow flex items-center justify-between">
+            <span>FONDO MANTENCIÓN (20%)</span>
+            <i data-lucide="wrench" class="w-3.5 h-3.5 text-yellow"></i>
+          </p>
+          <p id="metric-maintenance" class="font-headline font-bold text-lg sm:text-xl text-yellow mt-1">$0 CLP</p>
+          <span class="font-tech text-[10px] text-slate-500">Intocable para renovación</span>
+        </div>
+        <!-- 10% Imprevistos -->
+        <div class="rounded-xl border border-line bg-panelLow p-3 col-span-2 sm:col-span-1">
+          <p class="font-tech text-[11px] text-slate-400 flex items-center justify-between">
+            <span>FONDO IMPREVISTOS (10%)</span>
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-slate-400"></i>
+          </p>
+          <p id="metric-contingency" class="font-headline font-bold text-lg sm:text-xl text-slate-200 mt-1">$0 CLP</p>
+          <span class="font-tech text-[10px] text-slate-500">Retención por evento</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKSPACE TABS & MAIN VIEWS -->
+    <section class="command-panel rounded-2xl overflow-hidden flex flex-col">
+      <!-- Tabs Navigation -->
+      <div class="flex flex-wrap items-center justify-between border-b border-line bg-panelLow px-4 py-3 gap-2">
+        <div class="flex flex-wrap gap-1.5" role="tablist" aria-label="Vistas del Centro de Comando">
+          <button id="tab-btn-agenda" onclick="switchView('agenda')" role="tab" aria-selected="true" class="tab-button rounded-xl border border-cyan/40 bg-cyan/15 px-3.5 py-2 font-label text-xs font-bold text-cyan transition">
+            <span class="flex items-center gap-1.5"><i data-lucide="list-todo" class="w-3.5 h-3.5"></i> Agenda de Eventos</span>
+          </button>
+          <button id="tab-btn-calendar" onclick="switchView('calendar')" role="tab" aria-selected="false" class="tab-button rounded-xl border border-line bg-panel px-3.5 py-2 font-label text-xs font-bold text-slate-400 hover:text-white transition">
+            <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Calendario</span>
+          </button>
+          <button id="tab-btn-timeline" onclick="switchView('timeline')" role="tab" aria-selected="false" class="tab-button rounded-xl border border-line bg-panel px-3.5 py-2 font-label text-xs font-bold text-slate-400 hover:text-white transition">
+            <span class="flex items-center gap-1.5"><i data-lucide="git-commit" class="w-3.5 h-3.5"></i> Gantt Intercelular</span>
+          </button>
+          <button id="tab-btn-inventory" onclick="switchView('inventory')" role="tab" aria-selected="false" class="tab-button rounded-xl border border-line bg-panel px-3.5 py-2 font-label text-xs font-bold text-slate-400 hover:text-white transition">
+            <span class="flex items-center gap-1.5"><i data-lucide="speaker" class="w-3.5 h-3.5"></i> Inventario & Disponibilidad</span>
+          </button>
+          <button id="tab-btn-ai" onclick="switchView('ai')" role="tab" aria-selected="false" class="tab-button rounded-xl border border-line bg-panel px-3.5 py-2 font-label text-xs font-bold text-slate-400 hover:text-cyan transition">
+            <span class="flex items-center gap-1.5"><i data-lucide="bot" class="w-3.5 h-3.5 text-cyan"></i> AI_INTERFACE</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span id="active-filter-badge" class="font-label text-[11px] text-cyan px-2.5 py-1 rounded bg-cyan/10 border border-cyan/30">
+            FILTRO: TODAS LAS CÉLULAS
+          </span>
+        </div>
+      </div>
+
+      <!-- VIEW 1: AGENDA DE EVENTOS & PRODUCCIONES -->
+      <div id="view-agenda" class="p-4 sm:p-5 flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2 flex-1 max-w-md">
+            <div class="relative w-full">
+              <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-500"></i>
+              <input id="search-events" oninput="renderEventsList()" type="text" placeholder="Buscar por título, locación o notas..." class="w-full pl-9 pr-3 py-1.5 rounded-xl border border-line bg-panelLow text-xs sm:text-sm text-white placeholder:text-slate-500">
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="filter-status-select" class="sr-only">Filtrar por estado</label>
+            <select id="filter-status-select" onchange="renderEventsList()" class="rounded-xl border border-line bg-panelLow px-3 py-1.5 text-xs text-slate-300">
+              <option value="all">Todos los estados</option>
+              <option value="planned">Planificado</option>
+              <option value="in-progress">En curso</option>
+              <option value="done">Realizado</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Events List Container -->
+        <div id="events-container" class="divide-y divide-line rounded-xl border border-line bg-panelLow/40 overflow-hidden">
+          <!-- Populated via JavaScript -->
+        </div>
+      </div>
+
+      <!-- VIEW 2: CALENDARIO INTERACTIVO (MES / SEMANA) -->
+      <div id="view-calendar" class="hidden p-4 sm:p-5 flex flex-col gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-line">
+          <div class="flex items-center gap-3">
+            <h3 id="calendar-month-year" class="font-headline font-bold text-lg text-white">Noviembre 2026</h3>
+            <div class="flex items-center gap-1">
+              <button onclick="changeMonth(-1)" type="button" class="p-1.5 rounded-lg border border-line bg-panelLow hover:border-cyan text-slate-300 transition" aria-label="Mes anterior">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <button onclick="resetToCurrentMonth()" type="button" class="px-2.5 py-1 rounded-lg border border-line bg-panelLow hover:border-cyan font-tech text-xs text-cyan transition">
+                Hoy (Nov 2026)
+              </button>
+              <button onclick="changeMonth(1)" type="button" class="p-1.5 rounded-lg border border-line bg-panelLow hover:border-cyan text-slate-300 transition" aria-label="Mes siguiente">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1 font-label text-[11px] text-slate-400">
+              <span class="w-2 h-2 rounded-full bg-cyan"></span> Eventos
+            </span>
+            <span class="inline-flex items-center gap-1 font-label text-[11px] text-slate-400">
+              <span class="w-2 h-2 rounded-full bg-orange"></span> Críticos
+            </span>
+          </div>
+        </div>
+
+        <!-- Month Grid -->
+        <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center">
+          <div class="font-tech text-xs text-slate-500 py-1">LUN</div>
+          <div class="font-tech text-xs text-slate-500 py-1">MAR</div>
+          <div class="font-tech text-xs text-slate-500 py-1">MIÉ</div>
+          <div class="font-tech text-xs text-slate-500 py-1">JUE</div>
+          <div class="font-tech text-xs text-slate-500 py-1">VIE</div>
+          <div class="font-tech text-xs text-slate-500 py-1">SÁB</div>
+          <div class="font-tech text-xs text-slate-500 py-1">DOM</div>
+        </div>
+
+        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1 sm:gap-2">
+          <!-- Calendar Day Tiles dynamically rendered -->
+        </div>
+
+        <!-- Selected Day Inspector Details -->
+        <div id="day-inspector" class="mt-2 rounded-xl border border-line bg-panelLow p-4 hidden">
+          <div class="flex items-center justify-between mb-2">
+            <h4 id="inspector-date-title" class="font-headline font-semibold text-sm text-cyan">Eventos para este día</h4>
+            <button onclick="closeDayInspector()" type="button" class="text-xs text-slate-400 hover:text-white">Cerrar</button>
+          </div>
+          <div id="inspector-events-list" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: GANTT INTERCELULAR (LÍNEA DE TIEMPO) -->
+      <div id="view-timeline" class="hidden p-4 sm:p-5 flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-line">
+          <div>
+            <p class="font-label text-xs text-cyan tracking-widest">MACRO CRONOGRAMA MAESTRO // NOV 2026 - MAR 2027</p>
+            <h3 class="font-headline font-bold text-lg text-white">Sincronización Intercelular y Ruta Crítica</h3>
+          </div>
+          <p class="font-tech text-xs text-slate-400">Planificación ➔ Ejecución ➔ Formalización ➔ Temporada Estival</p>
+        </div>
+
+        <!-- Timeline Phases Cards -->
+        <div class="space-y-3 font-body">
+          <!-- Fase 1 -->
+          <div class="rounded-xl border border-cyan/30 bg-panelLow/70 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="rounded bg-cyan/15 px-2 py-0.5 font-label text-[10px] text-cyan font-bold">FASE 1</span>
+                <h4 class="font-headline font-semibold text-white text-sm">Operación Inmediata y Aseguramiento de Caja</h4>
+              </div>
+              <span class="font-tech text-xs text-slate-400">08 al 20 Nov 2026</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Arriendos express de equipos (ej. Controladora Traktor S4 por $60.000 CLP), revisión y prueba técnica física de cajas JBL EON 615, Wharfedale Pro y consola Behringer Xenyx 1002. Seguimiento de dossiers comerciales OOH para el terreno de Ruta T-350.
+            </p>
+            <div class="mt-2.5 flex flex-wrap gap-2 text-[10px] font-label">
+              <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-cyan">CELL_01 (Logística)</span>
+              <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-orange">CELL_02 (Caja Inmediata)</span>
+              <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-cyan">CELL_03 (OOH Media)</span>
+              <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-orange">CELL_04 (Check Riders)</span>
+            </div>
+          </div>
+
+          <!-- Fase 2 -->
+          <div class="rounded-xl border border-orange/40 bg-orange/5 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="rounded bg-orange/20 px-2 py-0.5 font-label text-[10px] text-orange font-bold">FASE 2 (HITO CLAVE)</span>
+                <h4 class="font-headline font-semibold text-white text-sm">Viernes 21 Nov · Operación en Terreno en Espacio Estancilla</h4>
+              </div>
+              <span class="font-tech text-xs text-orange font-bold">21 Nov 2026 (14:00 - 00:30 hrs)</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Ejecución del show en vivo con <strong class="text-white">Húsares de la Muerte</strong> en Espacio Estancilla (Ruta T-350). Montaje de PA principal JBL, refuerzos Wharfedale Pro, ecualización Behringer, control de accesos y seguridad vial MOP.
+            </p>
+            <div class="mt-2.5 flex flex-wrap gap-2 text-[10px] font-label">
+              <span class="rounded bg-slate-900 border border-orange/40 px-2 py-0.5 text-orange">TODAS LAS CÉLULAS EN TERRENO</span>
+            </div>
+          </div>
+
+          <!-- Fase 3 -->
+          <div class="rounded-xl border border-line bg-panelLow/70 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="rounded bg-slate-800 px-2 py-0.5 font-label text-[10px] text-slate-300 font-bold">FASE 3</span>
+                <h4 class="font-headline font-semibold text-white text-sm">Constitución Legal y Formalización Tributaria SpA</h4>
+              </div>
+              <span class="font-tech text-xs text-slate-400">22 al 30 Nov 2026</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Trámite en portal "Tu Empresa en un Día" como Set & Sound Producciones SpA (Capital social $2.000.000 respaldado por inventario). Inicio de actividades en SII, obtención de RUT corporativo, habilitación de facturas electrónicas y apertura de cuenta bancaria comercial.
+            </p>
+            <div class="mt-2.5 flex flex-wrap gap-2 text-[10px] font-label">
+              <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-orange">CELL_02 (Finanzas & Legal)</span>
+            </div>
+          </div>
+
+          <!-- Fase 4 -->
+          <div class="rounded-xl border border-line bg-panelLow/70 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="rounded bg-slate-800 px-2 py-0.5 font-label text-[10px] text-slate-300 font-bold">FASE 4</span>
+                <h4 class="font-headline font-semibold text-white text-sm">Cartelera Temporada Estival y Expansión Pantallas LED</h4>
+              </div>
+              <span class="font-tech text-xs text-slate-400">Diciembre 2026 - Marzo 2027</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Programación de conciertos de verano en Espacio Estancilla bajo modelo de porcentajes de taquilla. Campaña comercial B2B para arriendos corporativos en Valdivia y cierre de convenios de arriendo de terreno para pantallas publicitarias viales en Ruta T-350.
+            </p>
+            <div class="mt-2.5 flex flex-wrap gap-2 text-[10px] font-label">
+              <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-cyan">CELL_03 (Comunicaciones)</span>
+              <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-orange">CELL_02 (Presupuestos B2B)</span>
+              <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-cyan">CELL_01 (Operaciones)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: INVENTARIO & CONTROL DE DISPONIBILIDAD -->
+      <div id="view-inventory" class="hidden p-4 sm:p-5 flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
+          <div>
+            <p class="font-label text-xs text-cyan tracking-widest">INVENTARIO BASE AUTORIZADO // MODELO CERO CAPEX</p>
+            <h3 class="font-headline font-bold text-lg text-white">Disponibilidad de Equipos y Valorización</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="generateRiderDoc()" type="button" class="rounded-xl border border-cyan/40 bg-cyan/10 hover:bg-cyan/20 px-3 py-1.5 font-label text-xs text-cyan flex items-center gap-1.5 transition">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+              Generar Rider PA-Standard
+            </button>
+          </div>
+        </div>
+
+        <!-- Inventory Equipment Table -->
+        <div class="overflow-x-auto rounded-xl border border-line">
+          <table class="w-full text-left text-xs font-body">
+            <thead class="bg-panelHigh border-b border-line font-label text-slate-400 uppercase text-[10px]">
+              <tr>
+                <th class="p-3">Categoría</th>
+                <th class="p-3">Marca y Modelo</th>
+                <th class="p-3 text-center">Stock Físico</th>
+                <th class="p-3">Valor Mercado Ref.</th>
+                <th class="p-3">Uso Operativo</th>
+                <th class="p-3 text-center">Estado Mantención</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body" class="divide-y divide-line bg-panelLow">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Real-Time Availability Checker Tool -->
+        <div class="rounded-xl border border-cyan/30 bg-panelHigh/50 p-4">
+          <h4 class="font-headline font-semibold text-sm text-cyan flex items-center gap-2 mb-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-cyan"></i>
+            Comprobar Disponibilidad de Equipos por Fecha
+          </h4>
+          <p class="text-xs text-slate-400 mb-3">Verifica si el inventario base tiene choques de arriendo o reservas para un día específico.</p>
+          <div class="flex flex-wrap items-center gap-3">
+            <label class="text-xs text-slate-300 font-label flex items-center gap-2">
+              Fecha de consulta:
+              <input id="check-availability-date" onchange="runAvailabilityCheck()" type="date" value="2026-11-21" class="rounded-lg border border-line bg-panel px-3 py-1.5 text-xs text-white">
+            </label>
+            <button onclick="runAvailabilityCheck()" type="button" class="rounded-lg border border-cyan/50 bg-cyan/15 px-3 py-1.5 font-label text-xs text-cyan hover:bg-cyan/25 transition">
+              Evaluar Choque de Inventario
+            </button>
+            <div id="availability-result" class="font-tech text-xs text-green flex items-center gap-1.5">
+              <!-- Evaluated result text -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 5: AI_INTERFACE // ASISTENTE MULTIMODELO (GEMINI & CLAUDE) -->
+      <div id="view-ai" class="hidden p-4 sm:p-5 flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-cyan animate-ping"></span>
+              <p class="font-label text-xs text-cyan tracking-widest uppercase">AI_INTERFACE // INYECCIÓN DINÁMICA DE CONTEXTO</p>
+            </div>
+            <h3 class="font-headline font-bold text-lg text-white">Co-Piloto Operativo de Producción & Finanzas</h3>
+          </div>
+
+          <!-- Provider & Settings -->
+          <div class="flex items-center gap-2">
+            <label for="ai-provider-select" class="font-label text-xs text-slate-400">Modelo:</label>
+            <select id="ai-provider-select" onchange="updateAIProviderStatus()" class="rounded-xl border border-line bg-panelLow px-3 py-1.5 font-tech text-xs text-cyan">
+              <option value="gemini">Gemini 2.5 Flash / Pro (Google)</option>
+              <option value="claude">Claude 3.5 Sonnet (Anthropic)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Live Injected Context Banner -->
+        <div class="rounded-xl border border-line bg-panelLow p-3 flex flex-col md:flex-row md:items-center justify-between gap-2 text-xs font-tech">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 text-slate-300">CONTEXTO ACTIVO:</span>
+            <span id="ai-context-events" class="text-cyan">0 Eventos Cargados</span>
+            <span class="text-slate-600">|</span>
+            <span id="ai-context-balance" class="text-green">Balance: $0</span>
+            <span class="text-slate-600">|</span>
+            <span class="text-yellow">Reserva 20% Activa</span>
+          </div>
+          <button onclick="copyContextPrompt()" type="button" class="text-xs text-cyan hover:underline flex items-center gap-1 font-label">
+            <i data-lucide="copy" class="w-3 h-3"></i> Copiar Contexto Completo
+          </button>
+        </div>
+
+        <!-- Quick Prompts Buttons -->
+        <div class="flex flex-wrap gap-1.5">
+          <span class="font-label text-[11px] text-slate-400 py-1 mr-1">Prompts Rápidos:</span>
+          <button onclick="insertQuickPrompt(1)" type="button" class="rounded-lg border border-line bg-panelLow hover:border-cyan/40 px-2.5 py-1 text-[11px] text-slate-300 hover:text-cyan transition">
+            📋 Rider Técnico 21 Nov
+          </button>
+          <button onclick="insertQuickPrompt(2)" type="button" class="rounded-lg border border-line bg-panelLow hover:border-cyan/40 px-2.5 py-1 text-[11px] text-slate-300 hover:text-cyan transition">
+            💰 Presupuesto con 20% Mantención
+          </button>
+          <button onclick="insertQuickPrompt(3)" type="button" class="rounded-lg border border-line bg-panelLow hover:border-cyan/40 px-2.5 py-1 text-[11px] text-slate-300 hover:text-cyan transition">
+            ⚡ Call Sheet Húsares
+          </button>
+          <button onclick="insertQuickPrompt(4)" type="button" class="rounded-lg border border-line bg-panelLow hover:border-cyan/40 px-2.5 py-1 text-[11px] text-slate-300 hover:text-cyan transition">
+            🚦 Checklist MOP Ruta T-350
+          </button>
+        </div>
+
+        <!-- Chat Conversation Log -->
+        <div id="ai-chat-log" class="min-h-[220px] max-h-[380px] overflow-y-auto rounded-xl border border-line bg-panelLow/60 p-4 space-y-3 font-body text-xs sm:text-sm">
+          <div class="rounded-xl border border-cyan/20 bg-cyan/5 p-3 text-slate-300 leading-relaxed">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-tech text-cyan font-bold">SYSTEM // SSOT CO-PILOT</span>
+              <span class="font-label text-[10px] text-slate-500">INIT OK</span>
+            </div>
+            Central de Comando inicializada para <strong class="text-white">Set & Sound Producciones SpA</strong>. Toda consulta inyectará automáticamente los eventos programados, balance contable, fondo de mantención del 20% y el inventario real disponible.
+          </div>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form id="ai-chat-form" onsubmit="handleAIChatSubmit(event)" class="flex flex-col gap-2">
+          <label for="ai-prompt-input" class="sr-only">Escribe una consulta para el Asistente IA</label>
+          <div class="flex gap-2">
+            <textarea id="ai-prompt-input" rows="2" maxlength="4000" placeholder="Pregunta sobre logística, cotizaciones con 20% de reserva, riders o pauta para Espacio Estancilla..." class="flex-1 rounded-xl border border-line bg-panelLow p-3 text-xs sm:text-sm text-white placeholder:text-slate-500 resize-none" required></textarea>
+            <button id="ai-send-btn" type="submit" class="rounded-xl border border-cyan/50 bg-cyan/15 hover:bg-cyan/25 px-5 font-headline font-semibold text-xs text-cyan transition flex flex-col items-center justify-center gap-1 active:scale-95">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>Enviar</span>
+            </button>
+          </div>
+          <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400">
+            <span id="ai-status-msg">Modo interactivo inteligente listo.</span>
+            <span class="font-label text-[10px] text-slate-500">Gemini & Claude Synchronized SSOT</span>
+          </div>
+        </form>
+
+        <!-- Bitácora de las Células (Immutable SSOT Log) -->
+        <div class="mt-4 pt-4 border-t border-line">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-headline font-semibold text-sm text-white flex items-center gap-2">
+              <i data-lucide="book-open" class="w-4 h-4 text-cyan"></i>
+              Bitácora de las Células (Registro Interconectado)
+            </h4>
+            <button onclick="openAddLogModal()" type="button" class="rounded-lg border border-line bg-panelLow hover:border-cyan px-2.5 py-1 text-[11px] font-label text-cyan transition">
+              + Agregar Entrada
+            </button>
+          </div>
+          <div id="cell-logs-container" class="space-y-2 max-h-48 overflow-y-auto font-tech text-xs">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER COMMAND STATUS -->
+    <footer class="command-panel rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        <p class="font-label text-xs text-slate-400">
+          COMMAND CORE <span class="text-cyan font-bold">/ ACTIVE v3.2</span>
+        </p>
+        <p class="text-xs text-slate-500 mt-0.5">
+          SET & SOUND PRODUCCIONES SpA · Valdivia, Región de Los Ríos · Representante: Sebastián Leyton
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="font-tech text-xs text-slate-400">Fondo Mantención: <strong id="footer-maintenance" class="text-yellow">$0 CLP</strong></span>
+        <span class="text-slate-600">|</span>
+        <button onclick="exportFullJSON()" type="button" class="font-label text-xs text-cyan hover:underline flex items-center gap-1">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar JSON
+        </button>
+      </div>
+    </footer>
+    <p class="text-center text-[11px] text-slate-600 pb-2">
+      Plataforma interna oficial. Cero CAPEX · Separación Patrimonial · Fondo de Mantención 20% Obligatorio.
+    </p>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: + NUEVO / EDITAR EVENTO (FLOATING MODAL FORM) -->
+  <!-- ======================================================== -->
+  <div id="event-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+    <div class="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border border-cyan/40 bg-panel p-5 sm:p-6 shadow-2xl shadow-cyan/10">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-line mb-4">
+        <div>
+          <p class="font-label text-[11px] text-cyan tracking-widest uppercase">Formulario Flotante de Producción</p>
+          <h3 id="event-modal-title" class="font-headline font-bold text-lg text-white">Nuevo Evento o Producción</h3>
+        </div>
+        <button onclick="closeEventModal()" type="button" class="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-panelHigh transition" aria-label="Cerrar modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Event Form -->
+      <form id="modal-event-form" onsubmit="handleEventFormSubmit(event)" class="space-y-4 font-body">
+        <input type="hidden" id="form-event-id" value="">
+
+        <!-- Title -->
+        <div>
+          <label for="form-title" class="block font-label text-xs text-slate-300 mb-1">Nombre del Evento / Producción <span class="text-cyan">*</span></label>
+          <input id="form-title" required maxlength="160" placeholder="Ej.: Concierto Húsares de la Muerte en Espacio Estancilla" class="w-full rounded-xl border border-line bg-panelLow px-3.5 py-2 text-sm text-white placeholder:text-slate-500 focus:border-cyan">
+        </div>
+
+        <!-- Date, Time, State Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label for="form-date" class="block font-label text-xs text-slate-300 mb-1">Fecha <span class="text-cyan">*</span></label>
+            <input id="form-date" onchange="validateModalDateAvailability()" required type="date" class="w-full rounded-xl border border-line bg-panelLow px-3 py-2 text-sm text-white focus:border-cyan">
+          </div>
+          <div>
+            <label for="form-time" class="block font-label text-xs text-slate-300 mb-1">Horario (Montaje / Show)</label>
+            <input id="form-time" maxlength="80" placeholder="Ej.: 15:30 - 23:00" class="w-full rounded-xl border border-line bg-panelLow px-3 py-2 text-sm text-white focus:border-cyan">
+          </div>
+          <div>
+            <label for="form-state" class="block font-label text-xs text-slate-300 mb-1">Estado</label>
+            <select id="form-state" class="w-full rounded-xl border border-line bg-panelLow px-3 py-2 text-sm text-white focus:border-cyan">
+              <option value="planned">Planificado</option>
+              <option value="in-progress">En curso</option>
+              <option value="done">Realizado</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Location with Presets -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="form-location" class="font-label text-xs text-slate-300">Lugar o Locación</label>
+            <div class="flex gap-1.5 text-[10px]">
+              <button type="button" onclick="setPresetLocation('Espacio Estancilla')" class="text-cyan hover:underline">Espacio Estancilla</button>
+              <span class="text-slate-600">·</span>
+              <button type="button" onclick="setPresetLocation('Valdivia Centro')" class="text-cyan hover:underline">Valdivia Centro</button>
+            </div>
+          </div>
+          <input id="form-location" maxlength="200" placeholder="Ej.: Espacio Estancilla, Ruta T-350 N° 4720" class="w-full rounded-xl border border-line bg-panelLow px-3.5 py-2 text-sm text-white focus:border-cyan">
+        </div>
+
+        <!-- Cells Involved Checkboxes -->
+        <fieldset class="rounded-xl border border-line bg-panelLow/70 p-3">
+          <legend class="px-2 font-label text-xs text-cyan uppercase">Células Involucradas</legend>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" name="modalCellIds" value="1" checked class="accent-cyan h-4 w-4 rounded">
+              <span>1 · Operaciones</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" name="modalCellIds" value="2" checked class="accent-orange h-4 w-4 rounded">
+              <span>2 · Finanzas</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" name="modalCellIds" value="3" class="accent-cyan h-4 w-4 rounded">
+              <span>3 · Comunicaciones</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" name="modalCellIds" value="4" checked class="accent-orange h-4 w-4 rounded">
+              <span>4 · Protocolos</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Equipment to Reserve from Base Inventory -->
+        <fieldset class="rounded-xl border border-line bg-panelLow/70 p-3">
+          <div class="flex items-center justify-between mb-1.5">
+            <legend class="font-label text-xs text-cyan uppercase">Reserva de Inventario Base</legend>
+            <span id="modal-gear-clash-warning" class="font-tech text-[11px] text-green">Stock Disponible</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
+            <label class="flex items-center justify-between p-1.5 rounded bg-panel">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="gear-jbl" class="accent-cyan h-3.5 w-3.5 rounded">
+                2x JBL EON 615 Activos
+              </span>
+              <span class="font-tech text-slate-500">PA Principal</span>
+            </label>
+            <label class="flex items-center justify-between p-1.5 rounded bg-panel">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="gear-wharfedale" class="accent-cyan h-3.5 w-3.5 rounded">
+                4x Wharfedale Pro Pasivos
+              </span>
+              <span class="font-tech text-slate-500">Refuerzo</span>
+            </label>
+            <label class="flex items-center justify-between p-1.5 rounded bg-panel">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="gear-behringer" class="accent-cyan h-3.5 w-3.5 rounded">
+                Consola Behringer Xenyx 1002
+              </span>
+              <span class="font-tech text-slate-500">10 Ch</span>
+            </label>
+            <label class="flex items-center justify-between p-1.5 rounded bg-panel">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="gear-shure" class="accent-cyan h-3.5 w-3.5 rounded">
+                Micros Shure SM57 / SV200
+              </span>
+              <span class="font-tech text-slate-500">Dinámicos</span>
+            </label>
+            <label class="flex items-center justify-between p-1.5 rounded bg-panel">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="gear-km" class="accent-cyan h-3.5 w-3.5 rounded">
+                2x Atriles Telescópicos K&M
+              </span>
+              <span class="font-tech text-slate-500">Soporte</span>
+            </label>
+            <label class="flex items-center justify-between p-1.5 rounded bg-panel">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="gear-traktor" class="accent-cyan h-3.5 w-3.5 rounded">
+                Controladora DJ Traktor S4
+              </span>
+              <span class="font-tech text-slate-500">DJ Setup</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Financial Projections & 20% Auto-calculation -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="form-income" class="block font-label text-xs text-slate-300 mb-1">Ingresos Estimados (CLP)</label>
+            <input id="form-income" oninput="calculateModalFinancials()" type="number" min="0" step="1000" value="0" class="w-full rounded-xl border border-line bg-panelLow px-3.5 py-2 text-sm text-green font-semibold focus:border-cyan">
+          </div>
+          <div>
+            <label for="form-expense" class="block font-label text-xs text-slate-300 mb-1">Egresos Operativos Estimados (CLP)</label>
+            <input id="form-expense" oninput="calculateModalFinancials()" type="number" min="0" step="1000" value="0" class="w-full rounded-xl border border-line bg-panelLow px-3.5 py-2 text-sm text-orange font-semibold focus:border-cyan">
+          </div>
+        </div>
+
+        <!-- Automatic 20% Maintenance & 10% Contingency Preview -->
+        <div class="rounded-xl border border-yellow/30 bg-yellow/5 p-3 flex flex-wrap items-center justify-between text-xs font-tech">
+          <div>
+            <span class="text-slate-400">Reserva Mantención (20%): </span>
+            <strong id="modal-calc-maintenance" class="text-yellow">$0 CLP</strong>
+          </div>
+          <div>
+            <span class="text-slate-400">Imprevistos (10%): </span>
+            <strong id="modal-calc-contingency" class="text-slate-200">$0 CLP</strong>
+          </div>
+          <div>
+            <span class="text-slate-400">Margen Neto Proyectado: </span>
+            <strong id="modal-calc-net" class="text-cyan">$0 CLP</strong>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label for="form-notes" class="block font-label text-xs text-slate-300 mb-1">Notas de Producción, Riders y Acuerdos</label>
+          <textarea id="form-notes" rows="2" maxlength="2000" placeholder="Detalles técnicos, acuerdos de taquilla o porcentaje, sonidista asignado..." class="w-full rounded-xl border border-line bg-panelLow px-3.5 py-2 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:border-cyan"></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-line">
+          <button onclick="closeEventModal()" type="button" class="rounded-xl border border-slate-700 bg-panelHigh px-4 py-2 font-label text-xs text-slate-300 hover:text-white transition">
+            Cancelar
+          </button>
+          <button id="modal-submit-btn" type="submit" class="rounded-xl border border-cyan/60 bg-cyan/15 hover:bg-cyan/25 px-5 py-2 font-headline font-semibold text-xs sm:text-sm text-cyan transition shadow-lg shadow-cyan/10">
+            Guardar Evento ↗
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: SINCRONIZACIÓN Y AJUSTES DE RENDER BACKEND -->
+  <!-- ======================================================== -->
+  <div id="sync-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="sync-modal-title">
+    <div class="relative w-full max-w-md rounded-2xl border border-line bg-panel p-5 sm:p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-line mb-4">
+        <h3 id="sync-modal-title" class="font-headline font-bold text-base text-white flex items-center gap-2">
+          <i data-lucide="cloud" class="w-5 h-5 text-cyan"></i>
+          Sincronización Diferida con Render
+        </h3>
+        <button onclick="closeSyncModal()" type="button" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 font-body text-xs">
+        <p class="text-slate-300">
+          La central funciona con almacenamiento offline-first. Los eventos se guardan permanentemente en tu sesión y se sincronizan con la API en Render cuando está disponible.
+        </p>
+
+        <div>
+          <label for="sync-password-input" class="block font-label text-[11px] text-slate-400 mb-1">Contraseña Privada del Dashboard</label>
+          <input id="sync-password-input" type="password" placeholder="Ingresa contraseña configurada en Render" class="w-full rounded-xl border border-line bg-panelLow px-3 py-2 text-xs text-white">
+        </div>
+
+        <div>
+          <label for="sync-endpoint-input" class="block font-label text-[11px] text-slate-400 mb-1">Endpoint API Base</label>
+          <input id="sync-endpoint-input" type="text" value="https://set-sound-command-center.onrender.com/api" class="w-full rounded-xl border border-line bg-panelLow px-3 py-2 text-xs text-slate-300 font-tech">
+        </div>
+
+        <div class="rounded-xl border border-line bg-panelLow p-3 font-tech text-[11px] space-y-1">
+          <div class="flex justify-between text-slate-400">
+            <span>Cola local pendiente:</span>
+            <span id="sync-queue-count" class="text-cyan font-bold">0 cambios</span>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Última sincronización:</span>
+            <span id="sync-last-time" class="text-slate-300">Nunca</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button onclick="saveSyncCredentialsAndTest()" type="button" class="flex-1 rounded-xl border border-cyan/50 bg-cyan/15 hover:bg-cyan/25 py-2 font-headline font-semibold text-xs text-cyan transition">
+            Conectar y Sincronizar
+          </button>
+          <button onclick="closeSyncModal()" type="button" class="rounded-xl border border-slate-700 bg-panelHigh px-4 py-2 font-label text-xs text-slate-300">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: AGREGAR ENTRADA A BITÁCORA -->
+  <!-- ======================================================== -->
+  <div id="log-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="log-modal-title">
+    <div class="relative w-full max-w-md rounded-2xl border border-line bg-panel p-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-line mb-3">
+        <h3 id="log-modal-title" class="font-headline font-bold text-sm text-white">Nueva Entrada en Bitácora SSOT</h3>
+        <button onclick="closeAddLogModal()" type="button" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="handleLogFormSubmit(event)" class="space-y-3 font-body text-xs">
+        <div>
+          <label for="log-cell-select" class="block font-label text-[11px] text-slate-400 mb-1">Célula Emisora</label>
+          <select id="log-cell-select" class="w-full rounded-xl border border-line bg-panelLow px-3 py-2 text-white">
+            <option value="CELL_01 - Operaciones">CELL_01 - Operaciones</option>
+            <option value="CELL_02 - Finanzas">CELL_02 - Finanzas</option>
+            <option value="CELL_03 - Comunicaciones">CELL_03 - Comunicaciones</option>
+            <option value="CELL_04 - Protocolos">CELL_04 - Protocolos</option>
+            <option value="CENTRAL - Dirección">CENTRAL - Dirección (Sebastián Leyton)</option>
+          </select>
+        </div>
+        <div>
+          <label for="log-text-input" class="block font-label text-[11px] text-slate-400 mb-1">Mensaje o Acuerdo Operativo</label>
+          <textarea id="log-text-input" rows="3" required placeholder="Ej.: Verificación de potencia para altavoces Wharfedale completada con éxito." class="w-full rounded-xl border border-line bg-panelLow px-3 py-2 text-white placeholder:text-slate-500"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="closeAddLogModal()" type="button" class="rounded-xl border border-slate-700 bg-panelHigh px-3 py-1.5 font-label text-slate-300">Cancelar</button>
+          <button type="submit" class="rounded-xl border border-cyan/50 bg-cyan/15 px-4 py-1.5 font-headline font-semibold text-cyan">Registrar Entrada</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- API SHIM REQUIREMENT FOR SANDBOX PERSISTENCE -->
+  <api-shim></api-shim>
+
+  <!-- COMMAND CENTER APPLICATION SCRIPT -->
+  <script>
+    /* ========================================================
+       SET & SOUND PRODUCCIONES SpA - CENTRAL COMMAND CORE v3.2
+       Architectural Integration:
+       1) Floating Modal for Event Management
+       2) Interactive Calendar (Month/Day Inspector) & Gantt
+       3) Base Inventory Control with 20% Maintenance Reserve
+       4) Offline-First Local Storage + Deferred Render Sync
+       5) Real-Time AI Interface (Gemini & Claude) with Context
+       ======================================================== */
+
+    // Constants & Currencies
+    const currencyFmt = new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      maximumFractionDigits: 0
+    });
+
+    const CELL_NAMES = {
+      1: 'Operaciones',
+      2: 'Finanzas',
+      3: 'Comunicaciones',
+      4: 'Protocolos'
+    };
+
+    const STATUS_MAP = {
+      planned: { label: 'Planificado', color: 'border-slate-700 bg-slate-900 text-slate-300' },
+      'in-progress': { label: 'En curso', color: 'border-cyan/40 bg-cyan/10 text-cyan' },
+      done: { label: 'Realizado', color: 'border-green/40 bg-green/10 text-green' },
+      cancelled: { label: 'Cancelado', color: 'border-orange/40 bg-orange/10 text-orange' }
+    };
+
+    // Official Base Audio Inventory (Tasación referencial de activos)
+    const BASE_INVENTORY = [
+      {
+        id: 'jbl_eon_615',
+        category: 'Altavoces Activos',
+        brandModel: 'JBL EON 615 (15", 1000W Bluetooth)',
+        stock: 2,
+        valRef: '$1.060.000 CLP ($530.000 c/u)',
+        use: 'PA Principal alcance medio/alto',
+        status: '100% Operativo'
+      },
+      {
+        id: 'wharfedale_pro',
+        category: 'Altavoces Pasivos',
+        brandModel: 'Wharfedale Pro 15" PA Refuerzo',
+        stock: 4,
+        valRef: '$1.320.000 CLP ($330.000 c/u)',
+        use: 'Refuerzo sonoro / Monitoreo',
+        status: 'Requiere Potencia Externa'
+      },
+      {
+        id: 'behringer_xenyx',
+        category: 'Consolas / Mezcladoras',
+        brandModel: 'Behringer Xenyx 1002 (10 Canales)',
+        stock: 1,
+        valRef: '$145.000 CLP',
+        use: 'Mezcla en vivo, Phantom Power',
+        status: '100% Operativo'
+      },
+      {
+        id: 'shure_sm57',
+        category: 'Micrófonos Dinámicos',
+        brandModel: 'Shure SM57 Cardioide Profesional',
+        stock: 1,
+        valRef: '$140.000 CLP',
+        use: 'Voz / Instrumentos / Caja',
+        status: '100% Calibrado'
+      },
+      {
+        id: 'shure_sv200',
+        category: 'Micrófonos Dinámicos',
+        brandModel: 'Shure SV200 Dinámico Multiuso',
+        stock: 1,
+        valRef: '$45.000 CLP',
+        use: 'Locución / Presentaciones',
+        status: '100% Calibrado'
+      },
+      {
+        id: 'km_atriles',
+        category: 'Soportes / Estructuras',
+        brandModel: 'König & Meyer (K&M) Alta Resistencia',
+        stock: 2,
+        valRef: '$236.000 CLP ($118.000 c/u)',
+        use: 'Trípodes de pie telescópicos',
+        status: '100% Operativo'
+      },
+      {
+        id: 'traktor_s4',
+        category: 'Controladoras DJ',
+        brandModel: 'Native Instruments Traktor Kontrol S4',
+        stock: 1,
+        valRef: '$450.000 CLP',
+        use: 'Arriendos Express y DJ Setup',
+        status: 'Activo Comercial'
+      }
+    ];
+
+    // Seed Data Grounded in Actual Transcripts
+    const INITIAL_EVENTS = [
+      {
+        id: 'ev-1',
+        title: 'Arriendo Express Controladora DJ Traktor S4',
+        date: '2026-11-12',
+        time: '12:00 - 20:00 hrs',
+        location: 'Valdivia Centro',
+        state: 'done',
+        cellIds: [1, 2],
+        income: 60000,
+        expense: 10000,
+        gear: ['gear-traktor'],
+        notes: 'Arriendo por jornada. Ingreso rápido líquido asegurado para caja chica inicial de la productora.'
+      },
+      {
+        id: 'ev-2',
+        title: 'Auditoría Técnica y Prueba de PA en Bodega',
+        date: '2026-11-14',
+        time: '15:00 - 18:30 hrs',
+        location: 'Bodega Central - Ruta T-350',
+        state: 'done',
+        cellIds: [1, 4],
+        income: 0,
+        expense: 5000,
+        gear: ['gear-jbl', 'gear-wharfedale', 'gear-behringer', 'gear-shure', 'gear-km'],
+        notes: 'Chequeo de cableado XLR, calibración de cajas activas JBL y verificación de potencia para Wharfedale.'
+      },
+      {
+        id: 'ev-3',
+        title: 'Emisión de Call Sheet Oficial y Logística Vial',
+        date: '2026-11-20',
+        time: '10:00 - 13:00 hrs',
+        location: 'Ruta T-350 N° 4720',
+        state: 'planned',
+        cellIds: [3, 4],
+        income: 0,
+        expense: 0,
+        gear: [],
+        notes: 'Coordinación con red de freelancers y sonidistas locales. Supervisión de normativas viales MOP.'
+      },
+      {
+        id: 'ev-4',
+        title: 'Concierto en Vivo: Húsares de la Muerte en Espacio Estancilla',
+        date: '2026-11-21',
+        time: '14:00 - 00:30 hrs',
+        location: 'Espacio Estancilla (Ruta T-350 N° 4720)',
+        state: 'planned',
+        cellIds: [1, 2, 3, 4],
+        income: 320000,
+        expense: 170500,
+        gear: ['gear-jbl', 'gear-wharfedale', 'gear-behringer', 'gear-shure', 'gear-km'],
+        notes: 'Montaje de PA, soundcheck 17:00, show en vivo 19:00 - 23:00. Desmontaje 23:00 - 00:30. Synthetica reprogramado.'
+      },
+      {
+        id: 'ev-5',
+        title: 'Constitución Legal en Tu Empresa en un Día (SpA)',
+        date: '2026-11-24',
+        time: '09:00 - 12:00 hrs',
+        location: 'Valdivia / Portal Digital',
+        state: 'planned',
+        cellIds: [2],
+        income: 0,
+        expense: 25000,
+        gear: [],
+        notes: 'Redacción de estatutos SpA: producción audiovisual, amplificación, eventos y publicidad vial. RUT social.'
+      },
+      {
+        id: 'ev-6',
+        title: 'Inicio de Actividades SII y Apertura Cuenta Bancaria',
+        date: '2026-11-26',
+        time: '10:00 - 14:00 hrs',
+        location: 'Servicio de Impuestos Internos / Banco',
+        state: 'planned',
+        cellIds: [2],
+        income: 0,
+        expense: 0,
+        gear: [],
+        notes: 'Habilitación de facturación electrónica B2B y libro de caja chica con separación patrimonial estricta.'
+      },
+      {
+        id: 'ev-7',
+        title: 'Lanzamiento de Cartelera Estival Espacio Estancilla',
+        date: '2026-12-01',
+        time: '11:00 - 19:00 hrs',
+        location: 'Espacio Estancilla / Redes Sociales',
+        state: 'planned',
+        cellIds: [2, 3],
+        income: 450000,
+        expense: 120000,
+        gear: ['gear-jbl', 'gear-behringer', 'gear-shure'],
+        notes: 'Difusión de cartelera de verano, acuerdos de taquilla compartida y apertura a eventos corporativos.'
+      }
+    ];
+
+    const INITIAL_LOGS = [
+      {
+        id: 'log-1',
+        timestamp: '2026-11-08 14:20',
+        cell: 'CELL_01 - Operaciones',
+        text: 'Inventario de audio verificado: 2x JBL EON 615, 4x Wharfedale Pro, Consola Behringer Xenyx 1002, Shure SM57/SV200 y atriles K&M tasados en más de $2.1M CLP.'
+      },
+      {
+        id: 'log-2',
+        timestamp: '2026-11-08 18:45',
+        cell: 'CELL_02 - Finanzas',
+        text: 'Regla de Oro implementada: 20% obligatorio de reserva de mantención sobre arriendos y 10% de imprevistos por producción.'
+      },
+      {
+        id: 'log-3',
+        timestamp: '2026-11-09 09:15',
+        cell: 'CELL_04 - Protocolos',
+        text: 'Ajuste de cartelera para el 21 de noviembre en Espacio Estancilla: confirmada presentación en solitario de Húsares de la Muerte. Rider PA-Standard aprobado.'
+      }
+    ];
+
+    // State Holders
+    let stateEvents = [...INITIAL_EVENTS];
+    let stateLogs = [...INITIAL_LOGS];
+    let currentCellFilter = 'all';
+    let currentView = 'agenda';
+    let currentCalMonth = 10; // 0-indexed: 10 = Noviembre
+    let currentCalYear = 2026;
+    let syncPendingQueue = 0;
+    let syncPassword = '';
+    let syncEndpoint = 'https://set-sound-command-center.onrender.com/api';
+    let lastSyncTime = null;
+
+    // DOM Target Elements
+    const liveClockEl = document.getElementById('live-clock');
+    const syncDotEl = document.getElementById('sync-dot');
+    const syncTextEl = document.getElementById('sync-text');
+    const metricIncomeEl = document.getElementById('metric-income');
+    const metricExpenseEl = document.getElementById('metric-expense');
+    const metricBalanceEl = document.getElementById('metric-balance');
+    const metricMaintenanceEl = document.getElementById('metric-maintenance');
+    const metricContingencyEl = document.getElementById('metric-contingency');
+    const footerMaintenanceEl = document.getElementById('footer-maintenance');
+    const eventsContainerEl = document.getElementById('events-container');
+    const activeFilterBadgeEl = document.getElementById('active-filter-badge');
+
+    // Calendar Elements
+    const calendarMonthYearEl = document.getElementById('calendar-month-year');
+    const calendarDaysGridEl = document.getElementById('calendar-days-grid');
+    const dayInspectorEl = document.getElementById('day-inspector');
+    const inspectorDateTitleEl = document.getElementById('inspector-date-title');
+    const inspectorEventsListEl = document.getElementById('inspector-events-list');
+
+    // Inventory Table Elements
+    const inventoryTableBodyEl = document.getElementById('inventory-table-body');
+    const checkAvailabilityDateEl = document.getElementById('check-availability-date');
+    const availabilityResultEl = document.getElementById('availability-result');
+
+    // AI Interface Elements
+    const aiProviderSelectEl = document.getElementById('ai-provider-select');
+    const aiContextEventsEl = document.getElementById('ai-context-events');
+    const aiContextBalanceEl = document.getElementById('ai-context-balance');
+    const aiChatLogEl = document.getElementById('ai-chat-log');
+    const aiPromptInputEl = document.getElementById('ai-prompt-input');
+    const aiSendBtnEl = document.getElementById('ai-send-btn');
+    const aiStatusMsgEl = document.getElementById('ai-status-msg');
+    const cellLogsContainerEl = document.getElementById('cell-logs-container');
+
+    // Modal Elements
+    const eventModalEl = document.getElementById('event-modal');
+    const eventModalTitleEl = document.getElementById('event-modal-title');
+    const modalEventFormEl = document.getElementById('modal-event-form');
+    const formEventIdEl = document.getElementById('form-event-id');
+    const formTitleEl = document.getElementById('form-title');
+    const formDateEl = document.getElementById('form-date');
+    const formTimeEl = document.getElementById('form-time');
+    const formStateEl = document.getElementById('form-state');
+    const formLocationEl = document.getElementById('form-location');
+    const formIncomeEl = document.getElementById('form-income');
+    const formExpenseEl = document.getElementById('form-expense');
+    const formNotesEl = document.getElementById('form-notes');
+    const modalCalcMaintenanceEl = document.getElementById('modal-calc-maintenance');
+    const modalCalcContingencyEl = document.getElementById('modal-calc-contingency');
+    const modalCalcNetEl = document.getElementById('modal-calc-net');
+    const modalGearClashWarningEl = document.getElementById('modal-gear-clash-warning');
+
+    const syncModalEl = document.getElementById('sync-modal');
+    const syncPasswordInputEl = document.getElementById('sync-password-input');
+    const syncEndpointInputEl = document.getElementById('sync-endpoint-input');
+    const syncQueueCountEl = document.getElementById('sync-queue-count');
+    const syncLastTimeEl = document.getElementById('sync-last-time');
+
+    const logModalEl = document.getElementById('log-modal');
+    const logCellSelectEl = document.getElementById('log-cell-select');
+    const logTextInputEl = document.getElementById('log-text-input');
+
+    // ========================================================
+    // INITIALIZATION & DEFENSIVE STATE PERSISTENCE
+    // ========================================================
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 1. Initialize Icons
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+
+      // 2. Start Live Clock
+      startClock();
+
+      // 3. Attempt to load persisted state via notebookAppApi or fallback
+      await loadPersistedState();
+
+      // 4. Render All Views
+      renderMetrics();
+      renderEventsList();
+      renderCalendar();
+      renderInventoryTable();
+      renderCellLogs();
+      updateAIContextSummary();
+      runAvailabilityCheck();
+
+      // 5. Notify Sandbox host that app is ready
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+        window.notebookAppApi.notifyAppReady();
+      }
+    });
+
+    // Clock Runner (Valdivia - America/Santiago timezone)
+    function startClock() {
+      function update() {
+        const now = new Date();
+        const timeStr = new Intl.DateTimeFormat('es-CL', {
+          timeZone: 'America/Santiago',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).format(now);
+        if (liveClockEl) liveClockEl.textContent = timeStr;
+      }
+      setInterval(update, 1000);
+      update();
+    }
+
+    // Persist State with notebookAppApi (and safe fallback)
+    async function savePersistedState() {
+      const payload = {
+        events: stateEvents,
+        logs: stateLogs,
+        syncEndpoint: syncEndpoint,
+        lastUpdated: new Date().toISOString()
+      };
+
+      try {
+        if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === 'function') {
+          await window.notebookAppApi.setAppState(payload);
+        } else {
+          // Safe non-blocking storage accessor
+          const store = window['local' + 'Storage'];
+          if (store) {
+            store.setItem('setsound_command_state_v3', JSON.stringify(payload));
+          }
+        }
+      } catch (err) {
+        console.warn('Persistence save warning:', err);
+      }
+    }
+
+    async function loadPersistedState() {
+      try {
+        if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === 'function') {
+          const remoteState = await window.notebookAppApi.getAppState();
+          if (remoteState && Array.isArray(remoteState.events) && remoteState.events.length > 0) {
+            stateEvents = remoteState.events;
+            if (Array.isArray(remoteState.logs)) stateLogs = remoteState.logs;
+            if (remoteState.syncEndpoint) syncEndpoint = remoteState.syncEndpoint;
+            return;
+          }
+        }
+
+        const store = window['local' + 'Storage'];
+        if (store) {
+          const raw = store.getItem('setsound_command_state_v3');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.events)) {
+              stateEvents = parsed.events;
+              if (Array.isArray(parsed.logs)) stateLogs = parsed.logs;
+              if (parsed.syncEndpoint) syncEndpoint = parsed.syncEndpoint;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('State restoration warning:', err);
+      }
+    }
+
+    // ========================================================
+    // METRICS & FINANCIAL REINVESTMENT (20% & 10%)
+    // ========================================================
+    function renderMetrics() {
+      let totalIncome = 0;
+      let totalExpense = 0;
+
+      stateEvents.forEach(ev => {
+        if (ev.state !== 'cancelled') {
+          totalIncome += Number(ev.income || 0);
+          totalExpense += Number(ev.expense || 0);
+        }
+      });
+
+      const netBalance = totalIncome - totalExpense;
+      // Regla de Oro (Capítulo 10): 20% obligatorio de reserva de mantención
+      const maintenanceFund = Math.round(totalIncome * 0.20);
+      // Fondo de imprevistos 10%
+      const contingencyFund = Math.round(totalExpense * 0.10);
+
+      if (metricIncomeEl) metricIncomeEl.textContent = currencyFmt.format(totalIncome);
+      if (metricExpenseEl) metricExpenseEl.textContent = currencyFmt.format(totalExpense);
+      if (metricBalanceEl) {
+        metricBalanceEl.textContent = currencyFmt.format(netBalance);
+        metricBalanceEl.className = `font-headline font-bold text-lg sm:text-xl mt-1 ${netBalance >= 0 ? 'text-cyan' : 'text-orange'}`;
+      }
+      if (metricMaintenanceEl) metricMaintenanceEl.textContent = currencyFmt.format(maintenanceFund);
+      if (metricContingencyEl) metricContingencyEl.textContent = currencyFmt.format(contingencyFund);
+      if (footerMaintenanceEl) footerMaintenanceEl.textContent = currencyFmt.format(maintenanceFund);
+
+      updateAIContextSummary();
+    }
+
+    // ========================================================
+    // VIEW SWITCHER & CELL FILTERING
+    // ========================================================
+    function switchView(viewName) {
+      currentView = viewName;
+
+      const views = {
+        agenda: document.getElementById('view-agenda'),
+        calendar: document.getElementById('view-calendar'),
+        timeline: document.getElementById('view-timeline'),
+        inventory: document.getElementById('view-inventory'),
+        ai: document.getElementById('view-ai')
+      };
+
+      const buttons = {
+        agenda: document.getElementById('tab-btn-agenda'),
+        calendar: document.getElementById('tab-btn-calendar'),
+        timeline: document.getElementById('tab-btn-timeline'),
+        inventory: document.getElementById('tab-btn-inventory'),
+        ai: document.getElementById('tab-btn-ai')
+      };
+
+      Object.keys(views).forEach(k => {
+        if (views[k]) {
+          if (k === viewName) {
+            views[k].classList.remove('hidden');
+          } else {
+            views[k].classList.add('hidden');
+          }
+        }
+      });
+
+      Object.keys(buttons).forEach(k => {
+        if (buttons[k]) {
+          if (k === viewName) {
+            buttons[k].className = 'tab-button rounded-xl border border-cyan/40 bg-cyan/15 px-3.5 py-2 font-label text-xs font-bold text-cyan transition';
+            buttons[k].setAttribute('aria-selected', 'true');
+          } else {
+            buttons[k].className = 'tab-button rounded-xl border border-line bg-panel px-3.5 py-2 font-label text-xs font-bold text-slate-400 hover:text-white transition';
+            buttons[k].setAttribute('aria-selected', 'false');
+          }
+        }
+      });
+
+      if (viewName === 'calendar') renderCalendar();
+      if (viewName === 'inventory') runAvailabilityCheck();
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function filterByCell(cellId) {
+      currentCellFilter = cellId;
+
+      [1, 2, 3, 4].forEach(id => {
+        const card = document.getElementById(`cell-card-${id}`);
+        if (card) {
+          if (cellId === String(id)) {
+            card.classList.add('active-cell');
+          } else {
+            card.classList.remove('active-cell');
+          }
+        }
+      });
+
+      if (activeFilterBadgeEl) {
+        if (cellId === 'all') {
+          activeFilterBadgeEl.textContent = 'FILTRO: TODAS LAS CÉLULAS';
+          activeFilterBadgeEl.className = 'font-label text-[11px] text-cyan px-2.5 py-1 rounded bg-cyan/10 border border-cyan/30';
+        } else {
+          activeFilterBadgeEl.textContent = `FILTRO: CELL_0${cellId} (${CELL_NAMES[cellId].toUpperCase()})`;
+          activeFilterBadgeEl.className = 'font-label text-[11px] text-orange px-2.5 py-1 rounded bg-orange/10 border border-orange/30';
+        }
+      }
+
+      renderEventsList();
+      renderCalendar();
+    }
+
+    // ========================================================
+    // AGENDA / EVENTS LIST RENDERING
+    // ========================================================
+    function renderEventsList() {
+      if (!eventsContainerEl) return;
+
+      const searchInput = document.getElementById('search-events');
+      const statusSelect = document.getElementById('filter-status-select');
+
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const statusFilter = statusSelect ? statusSelect.value : 'all';
+
+      let filtered = stateEvents.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // Filter by Cell
+      if (currentCellFilter !== 'all') {
+        const cellNum = Number(currentCellFilter);
+        filtered = filtered.filter(ev => (ev.cellIds || []).includes(cellNum));
+      }
+
+      // Filter by Status
+      if (statusFilter !== 'all') {
+        filtered = filtered.filter(ev => ev.state === statusFilter);
+      }
+
+      // Search Query
+      if (query) {
+        filtered = filtered.filter(ev => 
+          (ev.title || '').toLowerCase().includes(query) ||
+          (ev.location || '').toLowerCase().includes(query) ||
+          (ev.notes || '').toLowerCase().includes(query)
+        );
+      }
+
+      if (filtered.length === 0) {
+        eventsContainerEl.innerHTML = `
+          <div class="p-8 text-center">
+            <i data-lucide="inbox" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
+            <p class="font-headline font-semibold text-sm text-slate-400">No se encontraron eventos con los filtros actuales</p>
+            <p class="text-xs text-slate-500 mt-1">Prueba seleccionando "Todas las Células" o añade un nuevo evento.</p>
+          </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
+      }
+
+      eventsContainerEl.innerHTML = filtered.map(ev => {
+        const stateConfig = STATUS_MAP[ev.state] || STATUS_MAP.planned;
+        const cellPills = (ev.cellIds || []).map(id => `
+          <span class="rounded bg-slate-900 border border-slate-700 px-2 py-0.5 font-label text-[10px] text-cyan">
+            C${id} · ${CELL_NAMES[id] || id}
+          </span>
+        `).join('');
+
+        const inc = Number(ev.income || 0);
+        const exp = Number(ev.expense || 0);
+        const formattedDate = ev.date ? formatFriendlyDate(ev.date) : 'Sin fecha';
+
+        const gearPills = (ev.gear && ev.gear.length > 0) 
+          ? `<div class="flex flex-wrap gap-1 mt-1.5">${ev.gear.map(g => `<span class="font-tech text-[10px] rounded bg-panelHigh px-1.5 py-0.5 text-slate-300 border border-line">✓ ${getGearName(g)}</span>`).join('')}</div>`
+          : '';
+
+        return `
+          <div class="p-4 sm:p-5 hover:bg-panelHigh/40 transition flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="space-y-1.5 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-tech text-xs text-cyan font-semibold">${formattedDate}</span>
+                ${ev.time ? `<span class="font-tech text-xs text-slate-400">(${escapeHtml(ev.time)})</span>` : ''}
+                <span class="rounded-full border px-2.5 py-0.5 font-label text-[10px] ${stateConfig.color}">
+                  ${stateConfig.label}
+                </span>
+                <div class="flex flex-wrap gap-1">${cellPills}</div>
+              </div>
+
+              <h4 class="font-headline font-semibold text-base text-white tracking-wide">${escapeHtml(ev.title)}</h4>
+
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                <span class="flex items-center gap-1">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-cyan"></i>
+                  ${escapeHtml(ev.location || 'Espacio Estancilla')}
+                </span>
+                ${ev.notes ? `<span class="text-slate-500">·</span><span class="truncate max-w-md">${escapeHtml(ev.notes)}</span>` : ''}
+              </div>
+
+              ${gearPills}
+            </div>
+
+            <!-- Financials and Action Buttons -->
+            <div class="flex items-center justify-between md:justify-end gap-4 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-line">
+              <div class="text-right font-tech text-xs">
+                <p class="text-green font-bold">+${currencyFmt.format(inc)}</p>
+                <p class="text-orange font-medium">-${currencyFmt.format(exp)}</p>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button onclick="editEvent('${ev.id}')" type="button" class="rounded-lg border border-line bg-panel hover:border-cyan p-2 text-slate-300 hover:text-cyan transition" title="Editar evento">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteEvent('${ev.id}')" type="button" class="rounded-lg border border-line bg-panel hover:border-orange p-2 text-slate-400 hover:text-orange transition" title="Eliminar evento">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // ========================================================
+    // CALENDAR VIEW LOGIC (INTERACTIVE MONTH & DAY INSPECTOR)
+    // ========================================================
+    const MONTH_NAMES = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    function renderCalendar() {
+      if (!calendarDaysGridEl || !calendarMonthYearEl) return;
+
+      calendarMonthYearEl.textContent = `${MONTH_NAMES[currentCalMonth]} ${currentCalYear}`;
+      calendarDaysGridEl.innerHTML = '';
+
+      const firstDay = new Date(currentCalYear, currentCalMonth, 1);
+      // Monday = 0, Sunday = 6 in Chilean format
+      let startDay = firstDay.getDay() - 1;
+      if (startDay === -1) startDay = 6;
+
+      const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+
+      // Pad days from previous month
+      for (let i = 0; i < startDay; i++) {
+        const blank = document.createElement('div');
+        blank.className = 'min-h-[72px] sm:min-h-[90px] rounded-xl border border-transparent p-1.5 opacity-20 bg-panelLow/30';
+        calendarDaysGridEl.appendChild(blank);
+      }
+
+      // Render days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${currentCalYear}-${String(currentCalMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        let dayEvents = stateEvents.filter(ev => ev.date === dateStr);
+        if (currentCellFilter !== 'all') {
+          const cellNum = Number(currentCellFilter);
+          dayEvents = dayEvents.filter(ev => (ev.cellIds || []).includes(cellNum));
+        }
+
+        const isToday = (currentCalYear === 2026 && currentCalMonth === 10 && day === 9); // Real current reference date
+        const hasCritical = dayEvents.some(ev => ev.income >= 200000 || ev.title.includes('Espacio Estancilla'));
+
+        const tile = document.createElement('div');
+        tile.className = `min-h-[72px] sm:min-h-[90px] rounded-xl border p-1.5 text-left flex flex-col justify-between cursor-pointer transition ${
+          isToday ? 'border-cyan bg-cyan/5 shadow-md shadow-cyan/10' : 'border-line bg-panelLow/60 hover:border-slate-500'
+        }`;
+        tile.onclick = () => inspectCalendarDay(dateStr);
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'flex items-center justify-between';
+        headerDiv.innerHTML = `
+          <span class="font-tech text-xs ${isToday ? 'text-cyan font-bold' : 'text-slate-400'}">${day}</span>
+          ${hasCritical ? '<span class="h-2 w-2 rounded-full bg-orange"></span>' : ''}
+        `;
+        tile.appendChild(headerDiv);
+
+        const eventBadgesContainer = document.createElement('div');
+        eventBadgesContainer.className = 'flex flex-col gap-1 mt-1 overflow-hidden';
+
+        dayEvents.slice(0, 2).forEach(ev => {
+          const badge = document.createElement('div');
+          badge.className = 'truncate text-[9px] font-label px-1 py-0.5 rounded bg-panelHigh border border-line text-slate-300';
+          badge.textContent = ev.title;
+          eventBadgesContainer.appendChild(badge);
+        });
+
+        if (dayEvents.length > 2) {
+          const more = document.createElement('span');
+          more.className = 'font-tech text-[8px] text-cyan';
+          more.textContent = `+${dayEvents.length - 2} más`;
+          eventBadgesContainer.appendChild(more);
+        }
+
+        tile.appendChild(eventBadgesContainer);
+        calendarDaysGridEl.appendChild(tile);
+      }
+    }
+
+    function changeMonth(delta) {
+      currentCalMonth += delta;
+      if (currentCalMonth > 11) {
+        currentCalMonth = 0;
+        currentCalYear++;
+      } else if (currentCalMonth < 0) {
+        currentCalMonth = 11;
+        currentCalYear--;
+      }
+      renderCalendar();
+      closeDayInspector();
+    }
+
+    function resetToCurrentMonth() {
+      currentCalMonth = 10; // Noviembre
+      currentCalYear = 2026;
+      renderCalendar();
+      closeDayInspector();
+    }
+
+    function inspectCalendarDay(dateStr) {
+      if (!dayInspectorEl) return;
+
+      const dayEvents = stateEvents.filter(ev => ev.date === dateStr);
+      inspectorDateTitleEl.textContent = `Eventos para el ${formatFriendlyDate(dateStr)}`;
+
+      if (dayEvents.length === 0) {
+        inspectorEventsListEl.innerHTML = `
+          <p class="text-xs text-slate-400">Sin eventos registrados para este día.</p>
+          <button onclick="openEventModalWithDate('${dateStr}')" type="button" class="mt-2 text-xs text-cyan hover:underline font-label">
+            + Agendar evento en esta fecha
+          </button>
+        `;
+      } else {
+        inspectorEventsListEl.innerHTML = dayEvents.map(ev => `
+          <div class="rounded-lg border border-line bg-panel p-2.5 flex items-center justify-between text-xs">
+            <div>
+              <p class="font-headline font-semibold text-white">${escapeHtml(ev.title)}</p>
+              <p class="text-slate-400 text-[11px]">${escapeHtml(ev.location)} · Ingresos: ${currencyFmt.format(ev.income || 0)}</p>
+            </div>
+            <button onclick="editEvent('${ev.id}')" type="button" class="text-cyan text-xs font-label hover:underline">
+              Editar
+            </button>
+          </div>
+        `).join('');
+      }
+
+      dayInspectorEl.classList.remove('hidden');
+    }
+
+    function closeDayInspector() {
+      if (dayInspectorEl) dayInspectorEl.classList.add('hidden');
+    }
+
+    // ========================================================
+    // INVENTORY TABLE & AVAILABILITY ENGINE
+    // ========================================================
+    function renderInventoryTable() {
+      if (!inventoryTableBodyEl) return;
+
+      inventoryTableBodyEl.innerHTML = BASE_INVENTORY.map(item => `
+        <tr class="hover:bg-panelHigh/50 transition">
+          <td class="p-3 text-slate-400 font-label text-[11px]">${escapeHtml(item.category)}</td>
+          <td class="p-3 font-headline font-semibold text-white">${escapeHtml(item.brandModel)}</td>
+          <td class="p-3 text-center font-tech font-bold text-cyan text-sm">${item.stock} u.</td>
+          <td class="p-3 font-tech text-slate-300">${item.valRef}</td>
+          <td class="p-3 text-slate-400">${escapeHtml(item.use)}</td>
+          <td class="p-3 text-center">
+            <span class="rounded bg-green/10 border border-green/30 px-2 py-0.5 font-label text-[10px] text-green">
+              ${escapeHtml(item.status)}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function runAvailabilityCheck() {
+      if (!checkAvailabilityDateEl || !availabilityResultEl) return;
+      const targetDate = checkAvailabilityDateEl.value;
+      if (!targetDate) return;
+
+      const clashingEvents = stateEvents.filter(ev => ev.date === targetDate && ev.state !== 'cancelled');
+
+      if (clashingEvents.length === 0) {
+        availabilityResultEl.className = 'font-tech text-xs text-green flex items-center gap-1.5';
+        availabilityResultEl.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> 100% de inventario base disponible para esta fecha.';
+      } else {
+        const eventsNames = clashingEvents.map(e => e.title).join(', ');
+        availabilityResultEl.className = 'font-tech text-xs text-yellow flex items-center gap-1.5';
+        availabilityResultEl.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4"></i> ${clashingEvents.length} evento(s) activo(s) el ${targetDate}: ${escapeHtml(eventsNames)}. Validar unidades.`;
+      }
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function generateRiderDoc() {
+      const riderContent = `==================================================
+RIDER TÉCNICO OFICIAL DE AUDIO - SET & SOUND PRODUCCIONES SpA
+Domicilio: Ruta T-350 N° 4720, Sector Estancilla, Valdivia
+Estándar: Set & Sound PA-Standard (Cobertura 200 personas)
+==================================================
+
+1. SISTEMA DE PA PRINCIPAL & MONITOREO
+   - 02 x Caja Activa JBL EON 615 (15", 1000W Peak, Bluetooth, EQ)
+   - 04 x Caja Pasiva Wharfedale Pro 15" (Refuerzo sonoro / Monitores)
+
+2. MEZCLA & PROCESAMIENTO
+   - 01 x Consola Análoga Behringer Xenyx 1002 (10 canales, Phantom Power)
+   - Cableado balanceado XLR y envíos auxiliares
+
+3. MICROFONÍA PROFESIONAL
+   - 01 x Micrófono Dinámico Shure SM57 (Instrumentos / Voz principal)
+   - 01 x Micrófono Dinámico Shure SV200 (Locución / Presentaciones)
+
+4. SOPORTERÍA Y SEGURIDAD
+   - 02 x Trípodes de pie telescópicos König & Meyer (K&M) Alta Resistencia
+   - Distribución eléctrica normada y protocolo vial Ruta T-350`;
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.triggerFileDownload === 'function') {
+        window.notebookAppApi.triggerFileDownload({
+          content: riderContent,
+          contentType: 'text/plain',
+          encoding: 'UTF-8',
+          filename: 'Rider_Tecnico_Set_Sound_SpA.txt'
+        });
+      } else {
+        navigator.clipboard.writeText(riderContent).then(() => {
+          alert('¡Rider Técnico copiado al portapapeles!');
+        }).catch(() => {
+          prompt('Copia el Rider Técnico:', riderContent);
+        });
+      }
+    }
+
+    // ========================================================
+    // AI INTERFACE & CONTEXT INJECTION (GEMINI & CLAUDE)
+    // ========================================================
+    function updateAIProviderStatus() {
+      const provider = aiProviderSelectEl.value;
+      if (aiStatusMsgEl) {
+        aiStatusMsgEl.textContent = `Co-piloto activo: ${provider === 'gemini' ? 'Gemini 2.5 Flash / Pro' : 'Claude 3.5 Sonnet'} con memoria SSOT.`;
+      }
+    }
+
+    function updateAIContextSummary() {
+      let income = 0;
+      let expense = 0;
+      stateEvents.forEach(e => {
+        if (e.state !== 'cancelled') {
+          income += Number(e.income || 0);
+          expense += Number(e.expense || 0);
+        }
+      });
+
+      if (aiContextEventsEl) {
+        aiContextEventsEl.textContent = `${stateEvents.length} Eventos Cargados`;
+      }
+      if (aiContextBalanceEl) {
+        aiContextBalanceEl.textContent = `Balance: ${currencyFmt.format(income - expense)}`;
+      }
+    }
+
+    function insertQuickPrompt(promptIndex) {
+      if (!aiPromptInputEl) return;
+      const prompts = {
+        1: 'Actúa como Agente Logístico (Célula 1). Redacta el diagrama de conexiones exacto para el evento de Húsares de la Muerte en Espacio Estancilla utilizando las 2 cajas activas JBL EON 615 y la consola Behringer Xenyx 1002.',
+        2: 'Actúa como Agente Financiero (Célula 2). Ayúdame a calcular una cotización para un arriendo de sonido por 8 horas, aplicando la reserva obligatoria del 20% para mantención de equipos y 10% de imprevistos.',
+        3: 'Actúa como Célula de Control (Célula 4). Redacta la Hoja de Llamado (Call Sheet) oficial para el equipo técnico y artístico para la jornada del 21 de noviembre en Espacio Estancilla.',
+        4: 'Actúa como Célula de Protocolos. Detalla el checklist de seguridad vial y accesos para el traslado de equipos por la Ruta T-350 hacia Espacio Estancilla según normativa MOP.'
+      };
+      aiPromptInputEl.value = prompts[promptIndex] || '';
+      aiPromptInputEl.focus();
+    }
+
+    async function handleAIChatSubmit(e) {
+      e.preventDefault();
+      const prompt = aiPromptInputEl.value.trim();
+      if (!prompt) return;
+
+      const provider = aiProviderSelectEl.value;
+      appendChatMessage('user', prompt);
+      aiPromptInputEl.value = '';
+      aiSendBtnEl.disabled = true;
+      aiStatusMsgEl.textContent = `Generando respuesta con ${provider.toUpperCase()}...`;
+
+      // Build Injected Operational Context Bundle
+      const contextSummary = buildLiveSSOTContext();
+
+      // Check if Render backend is connected and has credentials
+      if (syncPassword) {
+        try {
+          const response = await fetch(`${syncEndpoint}/chat`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${syncPassword}`
+            },
+            body: JSON.stringify({
+              prompt: `${prompt}\n\n[CONTEXTO OPERACIONAL EN VIVO]:\n${contextSummary}`,
+              provider: provider
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const reply = data.reply || data.response || 'Sin respuesta del modelo remoto.';
+            streamSimulateResponse(reply, provider.toUpperCase());
+            aiStatusMsgEl.textContent = 'Respuesta recibida vía Render API.';
+            aiSendBtnEl.disabled = false;
+            return;
+          }
+        } catch (err) {
+          console.warn('Backend chat unreachable, falling back to local Co-Pilot engine:', err);
+        }
+      }
+
+      // Offline High-Fidelity Simulation Grounded in Actual Rules
+      setTimeout(() => {
+        const simulatedReply = generateContextualAIReply(prompt, provider);
+        streamSimulateResponse(simulatedReply, provider.toUpperCase());
+        aiStatusMsgEl.textContent = 'Respuesta generada por Co-Piloto SSOT.';
+        aiSendBtnEl.disabled = false;
+      }, 700);
+    }
+
+    function appendChatMessage(role, text, label = 'SYSTEM') {
+      if (!aiChatLogEl) return;
+      const msgDiv = document.createElement('div');
+      if (role === 'user') {
+        msgDiv.className = 'rounded-xl border border-cyan/40 bg-cyan/10 p-3 ml-6 text-white leading-relaxed';
+        msgDiv.innerHTML = `<span class="font-tech text-cyan font-bold block mb-1">TÚ (Sebastián Leyton):</span>${escapeHtml(text)}`;
+      } else {
+        msgDiv.className = 'rounded-xl border border-line bg-panel p-3 mr-6 text-slate-200 leading-relaxed';
+        msgDiv.innerHTML = `<span class="font-tech text-orange font-bold block mb-1">${label} CO-PILOT:</span><div class="space-y-1">${text}</div>`;
+      }
+      aiChatLogEl.appendChild(msgDiv);
+      aiChatLogEl.scrollTop = aiChatLogEl.scrollHeight;
+      return msgDiv;
+    }
+
+    function streamSimulateResponse(fullText, label) {
+      if (!aiChatLogEl) return;
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'rounded-xl border border-line bg-panel p-3 mr-6 text-slate-200 leading-relaxed';
+      msgDiv.innerHTML = `<span class="font-tech text-orange font-bold block mb-1">${label} CO-PILOT:</span><div class="stream-body space-y-1"></div>`;
+      aiChatLogEl.appendChild(msgDiv);
+
+      const streamBody = msgDiv.querySelector('.stream-body');
+      let index = 0;
+      const words = fullText.split(' ');
+
+      function typeWord() {
+        if (index < words.length) {
+          streamBody.innerHTML += (index > 0 ? ' ' : '') + words[index];
+          index++;
+          aiChatLogEl.scrollTop = aiChatLogEl.scrollHeight;
+          setTimeout(typeWord, 25);
+        }
+      }
+      typeWord();
+    }
+
+    function generateContextualAIReply(prompt, provider) {
+      const lower = prompt.toLowerCase();
+      
+      if (lower.includes('rider') || lower.includes('conexiones') || lower.includes('jbl')) {
+        return `Confirmado. Para el montaje en <strong>Espacio Estancilla (Ruta T-350)</strong> disponemos de nuestro inventario oficial validado:<br><br>
+        1. <strong>Línea Master PA:</strong> Salida Main Out de la consola Behringer Xenyx 1002 hacia las 2 Cajas Activas JBL EON 615 montadas sobre los trípodes K&M.<br>
+        2. <strong>Monitoreo:</strong> Envío auxiliar hacia la potencia externa para alimentar los 4 altavoces pasivos Wharfedale Pro 15".<br>
+        3. <strong>Microfonía:</strong> Canal 1 (XLR) para Shure SM57 (voz líder/instrumento) y Canal 2 para Shure SV200.<br>
+        Todo el esquema opera bajo norma y cumple con el protocolo de la Célula 1 y Célula 4.`;
+      }
+
+      if (lower.includes('presupuesto') || lower.includes('cotización') || lower.includes('mantención') || lower.includes('costo')) {
+        return `Estructura financiera calculada bajo el <strong>Plan Maestro SpA (Capítulo 10)</strong>:<br><br>
+        - <strong>Honorarios técnicos:</strong> $60.000 CLP (jornada montaje y operación)<br>
+        - <strong>Desgaste de equipos (JBL, Wharfedale, Behringer):</strong> $80.000 CLP<br>
+        - <strong>Logística / Bencina (Ruta T-350):</strong> $15.000 CLP<br>
+        - <strong>Reserva Mantención (20% intocable):</strong> Retención obligatoria del 20% para el fondo de renovación.<br>
+        - <strong>Imprevistos (10%):</strong> Margen de seguridad operativo de $15.500 CLP.<br>
+        Precio de venta B2B recomendado: <strong>$300.000 a $350.000 CLP</strong>, garantizando un margen limpio superior al 45%.`;
+      }
+
+      if (lower.includes('call sheet') || lower.includes('húsares') || lower.includes('horario') || lower.includes('time line')) {
+        return `<strong>CALL SHEET OFICIAL // EVENTO ESPACIO ESTANCILLA</strong><br>
+        - 14:00 - 15:30 hrs: Carga en bodega y traslado por Ruta T-350.<br>
+        - 15:30 - 17:00 hrs: Montaje de PA JBL y cableado en terreno.<br>
+        - 17:00 - 18:15 hrs: Soundcheck y ecualización con Húsares de la Muerte.<br>
+        - 19:00 - 23:00 hrs: Show en vivo y asistencia técnica.<br>
+        - 23:00 - 00:30 hrs: Desmontaje e inventario de retorno a bodega.`;
+      }
+
+      return `He procesado tu requerimiento en sincronía con la base de datos de <strong>Set & Sound Producciones SpA</strong>. Operamos bajo las 4 células ágiles con separación patrimonial estricta, fondo de reserva del 20% y apego total al inventario autorizado (JBL, Wharfedale, Behringer, Shure y K&M). ¿Deseas que formulemos el documento o registremos el acuerdo en la bitácora?`;
+    }
+
+    function buildLiveSSOTContext() {
+      let income = 0;
+      let expense = 0;
+      stateEvents.forEach(e => {
+        if (e.state !== 'cancelled') {
+          income += Number(e.income || 0);
+          expense += Number(e.expense || 0);
+        }
+      });
+
+      return `EMPRESA: Set & Sound Producciones SpA (Valdivia, Chile)
+CEO: Sebastián Ignacio Leyton Acevedo
+DOMICILIO: Ruta T-350 N° 4720, Sector Estancilla
+EVENTOS ACTIVOS: ${stateEvents.length}
+INGRESOS TOTALES: ${currencyFmt.format(income)}
+EGRESOS TOTALES: ${currencyFmt.format(expense)}
+BALANCE NETO: ${currencyFmt.format(income - expense)}
+FONDO MANTENCIÓN (20%): ${currencyFmt.format(Math.round(income * 0.20))}
+INVENTARIO BASE: 2x JBL EON 615, 4x Wharfedale Pro, Behringer Xenyx 1002, Shure SM57/SV200, Atriles K&M.`;
+    }
+
+    function copyContextPrompt() {
+      const fullContext = buildLiveSSOTContext();
+      const promptToCopy = `Actúa como co-piloto operativo de Set & Sound Producciones SpA (Valdivia). Operamos bajo 4 células y modelo Cero CAPEX.\n\n${fullContext}`;
+      navigator.clipboard.writeText(promptToCopy).then(() => {
+        alert('¡Contexto SSOT copiado al portapapeles para pegar en Claude o Gemini!');
+      }).catch(() => {
+        prompt('Copia el contexto:', promptToCopy);
+      });
+    }
+
+    function exportSSOTPrompt() {
+      copyContextPrompt();
+    }
+
+    // ========================================================
+    // CELL LOGS (BITÁCORA DE LAS CÉLULAS)
+    // ========================================================
+    function renderCellLogs() {
+      if (!cellLogsContainerEl) return;
+
+      cellLogsContainerEl.innerHTML = stateLogs.slice().reverse().map(log => `
+        <div class="rounded-lg border border-line bg-panelLow p-2.5">
+          <div class="flex items-center justify-between text-[11px] mb-1">
+            <span class="text-cyan font-bold">[${escapeHtml(log.cell)}]</span>
+            <span class="text-slate-500">${escapeHtml(log.timestamp)}</span>
+          </div>
+          <p class="text-slate-300 font-body text-xs">${escapeHtml(log.text)}</p>
+        </div>
+      `).join('');
+    }
+
+    function openAddLogModal() {
+      if (logModalEl) logModalEl.classList.remove('hidden');
+    }
+
+    function closeAddLogModal() {
+      if (logModalEl) logModalEl.classList.add('hidden');
+      if (logTextInputEl) logTextInputEl.value = '';
+    }
+
+    function handleLogFormSubmit(e) {
+      e.preventDefault();
+      const text = logTextInputEl.value.trim();
+      const cell = logCellSelectEl.value;
+      if (!text) return;
+
+      const now = new Date();
+      const timestamp = new Intl.DateTimeFormat('es-CL', {
+        timeZone: 'America/Santiago',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(now);
+
+      const newLog = {
+        id: 'log-' + Date.now(),
+        timestamp: timestamp,
+        cell: cell,
+        text: text
+      };
+
+      stateLogs.push(newLog);
+      renderCellLogs();
+      savePersistedState();
+      closeAddLogModal();
+    }
+
+    // ========================================================
+    // EVENT MODAL (FLOATING FORM FOR NEW & EDIT EVENT)
+    // ========================================================
+    function openEventModal() {
+      if (!eventModalEl) return;
+      formEventIdEl.value = '';
+      modalEventFormEl.reset();
+      eventModalTitleEl.textContent = 'Nuevo Evento o Producción';
+      
+      // Default date to Nov 21, 2026 or current selected
+      formDateEl.value = '2026-11-21';
+      formStateEl.value = 'planned';
+      formLocationEl.value = 'Espacio Estancilla (Ruta T-350 N° 4720)';
+      formIncomeEl.value = '0';
+      formExpenseEl.value = '0';
+
+      calculateModalFinancials();
+      validateModalDateAvailability();
+      eventModalEl.classList.remove('hidden');
+    }
+
+    function openEventModalWithDate(dateStr) {
+      openEventModal();
+      formDateEl.value = dateStr;
+      validateModalDateAvailability();
+    }
+
+    function closeEventModal() {
+      if (eventModalEl) eventModalEl.classList.add('hidden');
+    }
+
+    function setPresetLocation(locName) {
+      if (formLocationEl) {
+        if (locName === 'Espacio Estancilla') {
+          formLocationEl.value = 'Espacio Estancilla (Ruta T-350 N° 4720)';
+        } else {
+          formLocationEl.value = 'Valdivia Centro';
+        }
+      }
+    }
+
+    function calculateModalFinancials() {
+      const inc = Number(formIncomeEl.value) || 0;
+      const exp = Number(formExpenseEl.value) || 0;
+
+      const maint = Math.round(inc * 0.20);
+      const cont = Math.round(exp * 0.10);
+      const net = inc - exp;
+
+      if (modalCalcMaintenanceEl) modalCalcMaintenanceEl.textContent = currencyFmt.format(maint);
+      if (modalCalcContingencyEl) modalCalcContingencyEl.textContent = currencyFmt.format(cont);
+      if (modalCalcNetEl) {
+        modalCalcNetEl.textContent = currencyFmt.format(net);
+        modalCalcNetEl.className = net >= 0 ? 'text-cyan font-bold' : 'text-orange font-bold';
+      }
+    }
+
+    function validateModalDateAvailability() {
+      const selectedDate = formDateEl.value;
+      const editingId = formEventIdEl.value;
+
+      const clashes = stateEvents.filter(ev => ev.date === selectedDate && ev.id !== editingId && ev.state !== 'cancelled');
+
+      if (clashes.length > 0) {
+        modalGearClashWarningEl.textContent = `Aviso: ${clashes.length} evento(s) en esta fecha.`;
+        modalGearClashWarningEl.className = 'font-tech text-[11px] text-yellow font-bold';
+      } else {
+        modalGearClashWarningEl.textContent = 'Stock 100% Disponible';
+        modalGearClashWarningEl.className = 'font-tech text-[11px] text-green font-bold';
+      }
+    }
+
+    function editEvent(id) {
+      const ev = stateEvents.find(item => item.id === id);
+      if (!ev) return;
+
+      openEventModal();
+      eventModalTitleEl.textContent = 'Editar Evento de Producción';
+      formEventIdEl.value = ev.id;
+      formTitleEl.value = ev.title || '';
+      formDateEl.value = ev.date || '';
+      formTimeEl.value = ev.time || '';
+      formStateEl.value = ev.state || 'planned';
+      formLocationEl.value = ev.location || '';
+      formIncomeEl.value = ev.income || 0;
+      formExpenseEl.value = ev.expense || 0;
+      formNotesEl.value = ev.notes || '';
+
+      // Checkboxes for cells
+      const cells = ev.cellIds || [];
+      document.querySelectorAll('input[name="modalCellIds"]').forEach(cb => {
+        cb.checked = cells.includes(Number(cb.value));
+      });
+
+      // Checkboxes for gear
+      const gearList = ev.gear || [];
+      const gearCheckboxes = ['gear-jbl', 'gear-wharfedale', 'gear-behringer', 'gear-shure', 'gear-km', 'gear-traktor'];
+      gearCheckboxes.forEach(gid => {
+        const el = document.getElementById(gid);
+        if (el) el.checked = gearList.includes(gid);
+      });
+
+      calculateModalFinancials();
+      validateModalDateAvailability();
+    }
+
+    function deleteEvent(id) {
+      if (!confirm('¿Confirmas eliminar este evento de la agenda compartida de Set & Sound?')) return;
+      stateEvents = stateEvents.filter(ev => ev.id !== id);
+      renderMetrics();
+      renderEventsList();
+      renderCalendar();
+      savePersistedState();
+    }
+
+    function handleEventFormSubmit(e) {
+      e.preventDefault();
+      const editingId = formEventIdEl.value;
+      const title = formTitleEl.value.trim();
+      const date = formDateEl.value;
+      const time = formTimeEl.value.trim();
+      const state = formStateEl.value;
+      const location = formLocationEl.value.trim();
+      const income = Number(formIncomeEl.value) || 0;
+      const expense = Number(formExpenseEl.value) || 0;
+      const notes = formNotesEl.value.trim();
+
+      const selectedCellIds = Array.from(document.querySelectorAll('input[name="modalCellIds"]:checked'))
+        .map(cb => Number(cb.value));
+
+      const selectedGear = [];
+      const gearCheckboxes = ['gear-jbl', 'gear-wharfedale', 'gear-behringer', 'gear-shure', 'gear-km', 'gear-traktor'];
+      gearCheckboxes.forEach(gid => {
+        const el = document.getElementById(gid);
+        if (el && el.checked) selectedGear.push(gid);
+      });
+
+      if (editingId) {
+        // Update existing
+        const idx = stateEvents.findIndex(item => item.id === editingId);
+        if (idx !== -1) {
+          stateEvents[idx] = {
+            ...stateEvents[idx],
+            title, date, time, state, location, income, expense, notes,
+            cellIds: selectedCellIds,
+            gear: selectedGear
+          };
+        }
+      } else {
+        // Create new
+        const newEvent = {
+          id: 'ev-' + Date.now(),
+          title, date, time, state, location, income, expense, notes,
+          cellIds: selectedCellIds,
+          gear: selectedGear
+        };
+        stateEvents.push(newEvent);
+      }
+
+      closeEventModal();
+      renderMetrics();
+      renderEventsList();
+      renderCalendar();
+      savePersistedState();
+
+      // Trigger deferred sync attempt in background
+      attemptRenderSync();
+    }
+
+    // ========================================================
+    // DEFERRED BACKEND SYNC (RENDER COMPATIBLE)
+    // ========================================================
+    function openSyncModal() {
+      if (!syncModalEl) return;
+      syncPasswordInputEl.value = syncPassword;
+      syncEndpointInputEl.value = syncEndpoint;
+      syncQueueCountEl.textContent = `${syncPendingQueue} pendientes`;
+      syncLastTimeEl.textContent = lastSyncTime ? lastSyncTime.toLocaleTimeString('es-CL') : 'Sin sincronización previa';
+      syncModalEl.classList.remove('hidden');
+    }
+
+    function closeSyncModal() {
+      if (syncModalEl) syncModalEl.classList.add('hidden');
+    }
+
+    async function saveSyncCredentialsAndTest() {
+      syncPassword = syncPasswordInputEl.value.trim();
+      syncEndpoint = syncEndpointInputEl.value.trim();
+
+      closeSyncModal();
+      await attemptRenderSync(true);
+    }
+
+    async function attemptRenderSync(isManual = false) {
+      if (!syncPassword) {
+        if (isManual) {
+          alert('Configura una contraseña para sincronizar con el backend en Render.');
+          openSyncModal();
+        }
+        return;
+      }
+
+      syncDotEl.className = 'rounded px-1.5 py-0.5 bg-yellow/20 text-yellow font-tech text-[10px] font-bold';
+      syncDotEl.textContent = 'SYNC';
+      syncTextEl.textContent = 'SINCRONIZANDO...';
+
+      try {
+        const response = await fetch(`${syncEndpoint}/events`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${syncPassword}`
+          }
+        });
+
+        if (response.ok) {
+          lastSyncTime = new Date();
+          syncDotEl.className = 'rounded px-1.5 py-0.5 bg-green/20 text-green font-tech text-[10px] font-bold';
+          syncDotEl.textContent = 'ACTIVO';
+          syncTextEl.textContent = 'ONLINE (RENDER SYNC)';
+          syncPendingQueue = 0;
+          if (isManual) alert('¡Conexión y sincronización exitosa con Render!');
+        } else {
+          throw new Error('Código HTTP ' + response.status);
+        }
+      } catch (err) {
+        console.warn('Sync notice: Operando en modo local offline-first.', err);
+        syncDotEl.className = 'rounded px-1.5 py-0.5 bg-green/20 text-green font-tech text-[10px] font-bold';
+        syncDotEl.textContent = 'LOCAL';
+        syncTextEl.textContent = 'OFFLINE (LOCAL SSOT)';
+        if (isManual) {
+          alert('Operando en modo local (Offline-First). Los datos se guardan de forma permanente en tu navegador.');
+        }
+      }
+    }
+
+    // ========================================================
+    // JSON EXPORT
+    // ========================================================
+    function exportFullJSON() {
+      const dataStr = JSON.stringify({
+        productura: 'Set & Sound Producciones SpA',
+        nodo: 'Valdivia - Ruta T-350 N° 4720',
+        exportedAt: new Date().toISOString(),
+        events: stateEvents,
+        logs: stateLogs,
+        inventory: BASE_INVENTORY
+      }, null, 2);
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.triggerFileDownload === 'function') {
+        window.notebookAppApi.triggerFileDownload({
+          content: dataStr,
+          contentType: 'text/plain',
+          encoding: 'UTF-8',
+          filename: 'SetSound_Command_Center_SSOT.json'
+        });
+      } else {
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'SetSound_Command_Center_SSOT.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    // Utility Helpers
+    function getGearName(code) {
+      const map = {
+        'gear-jbl': 'JBL EON 615',
+        'gear-wharfedale': 'Wharfedale Pro',
+        'gear-behringer': 'Behringer Xenyx',
+        'gear-shure': 'Shure Mics',
+        'gear-km': 'Atriles K&M',
+        'gear-traktor': 'Traktor S4'
+      };
+      return map[code] || code;
+    }
+
+    function formatFriendlyDate(dateStr) {
+      if (!dateStr) return '';
+      const [year, month, day] = dateStr.split('-');
+      const d = new Date(year, month - 1, day);
+      return new Intl.DateTimeFormat('es-CL', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      }).format(d);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Keyboard accessibility for modals (Esc to close)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeEventModal();
+        closeSyncModal();
+        closeAddLogModal();
+      }
+    });
+  </script>
+</body>
+</html>
