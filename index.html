@@ -8,11 +8,9 @@
   <title>SET & SOUND | Central de Comando</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      theme: { extend: { colors: {
-        carbon: '#0a0e17', panel: '#111827', cyan: '#00f0ff', orange: '#ff5500', green: '#00ff66', line: '#1f293d'
-      } } }
-    };
+    tailwind.config = { theme: { extend: { colors: {
+      carbon: '#0a0e17', panel: '#111827', cyan: '#00f0ff', orange: '#ff5500', green: '#00ff66', line: '#1f293d'
+    } } } };
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,14 +21,9 @@
     body { margin: 0; background: #0a0e17; color: #e2e8f0; font-family: Inter, sans-serif; }
     .tech { font-family: 'Share Tech Mono', monospace; }
     .panel { background: linear-gradient(145deg, rgba(17,24,39,.96), rgba(10,14,23,.94)); border: 1px solid #1f293d; backdrop-filter: blur(12px); }
-    .glow-cyan { box-shadow: 0 0 22px rgba(0,240,255,.09); border-color: rgba(0,240,255,.32); }
-    .glow-orange { box-shadow: 0 0 22px rgba(255,85,0,.08); border-color: rgba(255,85,0,.3); }
-    .cell { transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
-    .cell:hover { transform: translateY(-2px); border-color: rgba(0,240,255,.38); box-shadow: 0 8px 28px rgba(0,240,255,.06); }
-    .wave { height: 5px; animation: pulse-wave 1.15s ease-in-out infinite; }
-    .wave:nth-child(2) { animation-delay: .15s } .wave:nth-child(3) { animation-delay: .3s }
-    .wave:nth-child(4) { animation-delay: .45s } .wave:nth-child(5) { animation-delay: .6s }
-    @keyframes pulse-wave { 50% { height: 24px; opacity: .7; } }
+    .cell-button { min-height: 210px; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+    .cell-button:hover { transform: translateY(-3px); border-color: rgba(0,240,255,.55); box-shadow: 0 12px 35px rgba(0,240,255,.1); }
+    .cell-button[aria-expanded="true"] { border-color: rgba(0,240,255,.72); box-shadow: 0 0 28px rgba(0,240,255,.12); }
     .status-dot { box-shadow: 0 0 10px currentColor; }
     .chat-scroll { scrollbar-color: #334155 #0f172a; scrollbar-width: thin; }
     button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #00f0ff; outline-offset: 3px; }
@@ -39,226 +32,202 @@
 </head>
 <body class="min-h-screen">
   <div class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-    <header class="panel glow-cyan mb-6 flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+    <header class="panel mb-7 flex flex-col gap-4 rounded-2xl border-cyan/30 p-4 shadow-[0_0_24px_rgba(0,240,255,.08)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
       <div class="flex items-center gap-3">
-        <div class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-cyan/30 bg-cyan/10 text-cyan" aria-hidden="true">
-          <span class="tech text-xl">S/S</span><span class="status-dot absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-green text-green"></span>
-        </div>
-        <div>
-          <p class="tech text-lg tracking-wider text-white">SET & SOUND <span class="text-cyan">PRODUCCIONES SpA</span></p>
-          <p class="text-xs text-slate-400">CENTRAL DE COMANDO <span class="px-1 text-slate-600">/</span> VALDIVIA</p>
-        </div>
+        <div class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-cyan/30 bg-cyan/10 text-cyan" aria-hidden="true"><span class="tech text-xl">S/S</span><span class="status-dot absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-green text-green"></span></div>
+        <div><p class="tech text-lg tracking-wider text-white">SET & SOUND <span class="text-cyan">PRODUCCIONES SpA</span></p><p class="text-xs text-slate-400">CENTRAL DE COMANDO <span class="px-1 text-slate-600">/</span> VALDIVIA</p></div>
       </div>
       <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-        <div class="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2">
-          <span class="status-dot h-2 w-2 rounded-full bg-green text-green" aria-hidden="true"></span>
-          <span class="tech text-xs text-green">ONLINE</span>
-          <span class="tech text-xs text-slate-400">[4 CÉLULAS ACT]</span>
-        </div>
+        <div class="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2"><span class="status-dot h-2 w-2 rounded-full bg-green text-green" aria-hidden="true"></span><span class="tech text-xs text-green">ONLINE</span><span class="tech text-xs text-slate-400">[4 CÉLULAS]</span></div>
         <time id="clock" class="tech rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-cyan" aria-label="Hora actual">--:--:--</time>
       </div>
     </header>
 
     <main class="flex-1">
-      <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
-        <div><p class="tech text-xs tracking-[.2em] text-cyan">SISTEMA OPERATIVO <span class="text-slate-600">//</span> VISTA GENERAL</p><h1 class="mt-1 text-xl font-semibold text-white sm:text-2xl">Estado de las células</h1></div>
+      <div class="mb-5 flex flex-wrap items-end justify-between gap-2">
+        <div><p class="tech text-xs tracking-[.2em] text-cyan">SISTEMA OPERATIVO <span class="text-slate-600">//</span> VISTA GENERAL</p><h1 class="mt-1 text-2xl font-semibold text-white sm:text-3xl">Selecciona una célula</h1><p class="mt-2 text-sm text-slate-400">Cada módulo se abre como una sección independiente. Selecciona un botón para ver sus detalles.</p></div>
         <span class="tech text-xs text-slate-500">NODO: VALDIVIA-01</span>
       </div>
 
-      <section class="grid grid-cols-1 gap-4 md:grid-cols-2" aria-label="Cuatro células operativas">
-        <article class="panel cell rounded-2xl p-5">
-          <div class="mb-4 flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
-            <div><p class="tech text-xs text-slate-500">CELL_01</p><h2 class="tech mt-1 text-lg text-cyan">⚙ OPERACIONES</h2></div>
-            <span class="rounded-full border border-cyan/20 bg-cyan/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-cyan">LOGÍSTICA & TERRENO</span>
-          </div>
-          <div class="rounded-xl border border-slate-800 bg-slate-950/55 p-3.5">
-            <p class="tech text-[11px] tracking-wide text-slate-500">PRÓXIMO HITO</p>
-            <p class="mt-1 font-medium text-white">Evento · Espacio Estancilla</p>
-            <p class="mt-1 text-xs text-slate-400">Revisar fecha, disponibilidad y producción antes de publicar.</p>
-          </div>
-          <div class="mt-3 grid grid-cols-2 gap-3">
-            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Rider técnico</p><p class="mt-1 text-sm font-semibold text-green">✓ Validado</p></div>
-            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Inventario base</p><p class="mt-1 text-sm font-semibold text-cyan">Operativo</p></div>
-          </div>
-        </article>
+      <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Módulos por célula">
+        <button type="button" class="panel cell-button group rounded-2xl p-5 text-left" data-cell="operations" aria-expanded="false" aria-controls="cell-details">
+          <span class="flex items-center justify-between"><span class="tech text-xs tracking-widest text-slate-500">CELL_01</span><span class="rounded-full border border-cyan/25 bg-cyan/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-cyan">LOGÍSTICA</span></span>
+          <span class="mt-7 block text-3xl text-cyan" aria-hidden="true">⚙</span><span class="tech mt-2 block text-xl text-white">OPERACIONES</span>
+          <span class="mt-2 block text-sm leading-relaxed text-slate-400">Logística, terreno y coordinación de eventos.</span>
+          <span class="mt-6 flex items-center justify-between border-t border-slate-800 pt-3"><span class="tech text-xs text-green">● OPERATIVO</span><span class="tech text-xs text-cyan group-hover:translate-x-1">ABRIR →</span></span>
+        </button>
+        <button type="button" class="panel cell-button group rounded-2xl p-5 text-left" data-cell="finance" aria-expanded="false" aria-controls="cell-details">
+          <span class="flex items-center justify-between"><span class="tech text-xs tracking-widest text-slate-500">CELL_02</span><span class="rounded-full border border-orange/25 bg-orange/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-orange">CAJA & COSTOS</span></span>
+          <span class="mt-7 block text-3xl text-orange" aria-hidden="true">◈</span><span class="tech mt-2 block text-xl text-white">FINANZAS</span>
+          <span class="mt-2 block text-sm leading-relaxed text-slate-400">Presupuestos, costos y seguimiento administrativo.</span>
+          <span class="mt-6 flex items-center justify-between border-t border-slate-800 pt-3"><span class="tech text-xs text-orange">● REVISIÓN</span><span class="tech text-xs text-cyan group-hover:translate-x-1">ABRIR →</span></span>
+        </button>
+        <button type="button" class="panel cell-button group rounded-2xl p-5 text-left" data-cell="communications" aria-expanded="false" aria-controls="cell-details">
+          <span class="flex items-center justify-between"><span class="tech text-xs tracking-widest text-slate-500">CELL_03</span><span class="rounded-full border border-cyan/25 bg-cyan/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-cyan">DISEÑO & MEDIA</span></span>
+          <span class="mt-7 block text-3xl text-cyan" aria-hidden="true">✦</span><span class="tech mt-2 block text-xl text-white">COMUNICACIONES</span>
+          <span class="mt-2 block text-sm leading-relaxed text-slate-400">Kits comerciales, diseño y coordinación de medios.</span>
+          <span class="mt-6 flex items-center justify-between border-t border-slate-800 pt-3"><span class="tech text-xs text-green">● EN SEGUIMIENTO</span><span class="tech text-xs text-cyan group-hover:translate-x-1">ABRIR →</span></span>
+        </button>
+        <button type="button" class="panel cell-button group rounded-2xl p-5 text-left" data-cell="protocols" aria-expanded="false" aria-controls="cell-details">
+          <span class="flex items-center justify-between"><span class="tech text-xs tracking-widest text-slate-500">CELL_04</span><span class="rounded-full border border-orange/25 bg-orange/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-orange">CALIDAD & NORMAS</span></span>
+          <span class="mt-7 block text-3xl text-orange" aria-hidden="true">⌕</span><span class="tech mt-2 block text-xl text-white">PROTOCOLOS</span>
+          <span class="mt-2 block text-sm leading-relaxed text-slate-400">Riders, call sheets, timelines y normativa.</span>
+          <span class="mt-6 flex items-center justify-between border-t border-slate-800 pt-3"><span class="tech text-xs text-orange">● EN REVISIÓN</span><span class="tech text-xs text-cyan group-hover:translate-x-1">ABRIR →</span></span>
+        </button>
+      </section>
 
-        <article class="panel cell glow-orange rounded-2xl p-5">
-          <div class="mb-4 flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
-            <div><p class="tech text-xs text-slate-500">CELL_02</p><h2 class="tech mt-1 text-lg text-orange">◈ FINANZAS</h2></div>
-            <span class="rounded-full border border-orange/20 bg-orange/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-orange">CAJA & COSTOS</span>
-          </div>
-          <div class="rounded-xl border border-slate-800 bg-slate-950/55 p-3.5">
-            <p class="tech text-[11px] tracking-wide text-slate-500">CONTROL FINANCIERO</p>
-            <p class="mt-1 font-medium text-white">Proyecciones y presupuestos</p>
-            <p class="mt-1 text-xs text-slate-400">Información financiera reservada: consulta el sistema interno.</p>
-          </div>
-          <div class="mt-3 grid grid-cols-2 gap-3">
-            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Fondo imprevistos</p><p class="mt-1 text-sm font-semibold text-orange">Por confirmar</p></div>
-            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Documentación</p><p class="mt-1 text-sm font-semibold text-green">En seguimiento</p></div>
-          </div>
-        </article>
-
-        <article class="panel cell rounded-2xl p-5">
-          <div class="mb-4 flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
-            <div><p class="tech text-xs text-slate-500">CELL_03</p><h2 class="tech mt-1 text-lg text-cyan">✦ COMUNICACIONES</h2></div>
-            <span class="rounded-full border border-cyan/20 bg-cyan/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-cyan">DISEÑO & MEDIA</span>
-          </div>
-          <div class="rounded-xl border border-slate-800 bg-slate-950/55 p-3.5">
-            <p class="tech text-[11px] tracking-wide text-slate-500">PROYECTOS DE MEDIOS</p>
-            <p class="mt-1 font-medium text-white">Kits comerciales y coordinación OOH</p>
-            <p class="mt-1 text-xs text-slate-400">Material de campaña y ubicaciones disponibles para uso interno.</p>
-          </div>
-          <div class="mt-3 grid grid-cols-2 gap-3">
-            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Modelo de negocio</p><p class="mt-1 text-sm font-semibold text-white">Fijo / mixto</p></div>
-            <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3"><p class="text-xs text-slate-400">Sede principal</p><p class="mt-1 text-sm font-semibold text-white">Espacio Estancilla</p></div>
-          </div>
-        </article>
-
-        <article class="panel cell rounded-2xl p-5">
-          <div class="mb-4 flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
-            <div><p class="tech text-xs text-slate-500">CELL_04</p><h2 class="tech mt-1 text-lg text-orange">⌕ CONTROL DE PROTOCOLOS</h2></div>
-            <span class="rounded-full border border-orange/20 bg-orange/5 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-orange">CALIDAD & NORMAS</span>
-          </div>
-          <div class="space-y-3 rounded-xl border border-slate-800 bg-slate-950/55 p-3.5 text-sm">
-            <div class="flex items-center justify-between gap-3"><span class="text-slate-300">Riders técnicos</span><span class="text-green">✓ OK</span></div>
-            <div class="flex items-center justify-between gap-3"><span class="text-slate-300">Call sheets & timelines</span><span class="text-green">✓ OK</span></div>
-            <div class="flex items-center justify-between gap-3"><span class="text-slate-300">Normativa vial</span><span class="text-orange">En revisión</span></div>
-          </div>
-          <div class="mt-3 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/50 p-3"><span class="text-xs text-slate-400">Última verificación local</span><time id="sync-time" class="tech text-xs text-cyan">--:--:--</time></div>
-        </article>
+      <section id="cell-details" class="panel mt-5 hidden rounded-2xl p-5 sm:p-7" aria-live="polite" aria-labelledby="detail-title" tabindex="-1">
+        <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-800 pb-4">
+          <div><p id="detail-code" class="tech text-xs tracking-widest text-cyan"></p><h2 id="detail-title" class="tech mt-1 text-2xl text-white"></h2><p id="detail-subtitle" class="mt-2 text-sm text-slate-400"></p></div>
+          <button id="close-details" type="button" class="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:border-cyan/40 hover:text-cyan">Cerrar módulo ✕</button>
+        </div>
+        <p id="detail-summary" class="mt-5 max-w-3xl text-sm leading-relaxed text-slate-300"></p>
+        <div class="mt-5 grid gap-3 sm:grid-cols-2" id="detail-items"></div>
+        <p class="mt-5 rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-xs leading-relaxed text-slate-400">Panel de referencia: confirma y actualiza estos datos con el equipo antes de usarlos como información operativa definitiva.</p>
       </section>
 
       <section class="panel mt-5 overflow-hidden rounded-2xl" aria-labelledby="assistant-title">
         <div class="flex flex-col gap-3 border-b border-slate-800 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-          <div><p class="tech text-xs tracking-[.2em] text-cyan">AI_INTERFACE <span class="text-slate-600">//</span> ACCESO PRIVADO</p><h2 id="assistant-title" class="mt-1 text-lg font-semibold text-white">Asistente de producción</h2><p class="mt-1 max-w-2xl text-xs leading-relaxed text-slate-400">Ingresa la contraseña privada configurada por el administrador en Render. No es la clave API de Gemini o Claude.</p></div>
-          <label class="flex items-center gap-2 text-xs text-slate-400" for="provider">MODELO
-            <select id="provider" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="gemini">Gemini</option><option value="claude">Claude</option></select>
-          </label>
+          <div><p class="tech text-xs tracking-[.2em] text-cyan">AI_INTERFACE <span class="text-slate-600">//</span> ACCESO PRIVADO</p><h2 id="assistant-title" class="mt-1 text-lg font-semibold text-white">Asistente de producción</h2><p class="mt-1 max-w-2xl text-xs leading-relaxed text-slate-400">El acceso al asistente requiere la contraseña privada configurada en Render y la clave del proveedor elegido.</p></div>
+          <label class="flex items-center gap-2 text-xs text-slate-400" for="provider">MODELO<select id="provider" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="gemini">Gemini</option><option value="claude">Claude</option></select></label>
         </div>
-        <div id="chat-log" class="chat-scroll flex max-h-72 min-h-28 flex-col gap-3 overflow-y-auto p-4 sm:p-5" aria-live="polite" aria-label="Conversación">
-          <div class="max-w-3xl rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-300"><span class="tech mr-2 text-cyan">SYSTEM</span>El acceso privado protege el uso del asistente. La contraseña no se guarda de forma permanente.</div>
-        </div>
+        <div id="chat-log" class="chat-scroll flex max-h-72 min-h-24 flex-col gap-3 overflow-y-auto p-4 sm:p-5" aria-live="polite" aria-label="Conversación"><div class="max-w-3xl rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-300"><span class="tech mr-2 text-cyan">SYSTEM</span>Elige una célula para abrir su módulo. Para usar el asistente, ingresa la contraseña privada.</div></div>
         <form id="chat-form" class="border-t border-slate-800 bg-slate-950/40 p-3 sm:p-4">
-          <div class="mb-3 flex flex-col gap-2 sm:flex-row">
-            <label class="sr-only" for="access-password">Contraseña privada del dashboard</label>
-            <input id="access-password" type="password" autocomplete="current-password" placeholder="Contraseña privada del dashboard" class="min-h-[44px] flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500">
-            <button id="save-access" type="button" class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-300 hover:border-cyan/40 hover:text-cyan">Usar contraseña en esta pestaña</button>
-          </div>
-          <label class="sr-only" for="prompt">Escribe una consulta para el asistente</label>
-          <div class="flex flex-col gap-2 sm:flex-row">
-            <textarea id="prompt" rows="2" maxlength="4000" placeholder="Ej.: Ayúdame a preparar una checklist de producción..." class="min-h-[48px] flex-1 resize-y rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white placeholder:text-slate-500" required></textarea>
-            <button id="send-btn" type="submit" class="rounded-xl border border-cyan/40 bg-cyan/10 px-5 py-3 font-semibold text-cyan transition hover:bg-cyan/20 disabled:cursor-not-allowed disabled:opacity-50">Enviar consulta ↗</button>
-          </div>
-          <p id="api-status" class="mt-2 text-[11px] text-orange" role="status">El asistente requiere la contraseña privada configurada en Render y una clave API del proveedor elegido.</p>
+          <div class="mb-3 flex flex-col gap-2 sm:flex-row"><label class="sr-only" for="access-password">Contraseña privada del dashboard</label><input id="access-password" type="password" autocomplete="current-password" placeholder="Contraseña privada del dashboard" class="min-h-[44px] flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500"><button id="save-access" type="button" class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-300 hover:border-cyan/40 hover:text-cyan">Usar contraseña en esta pestaña</button></div>
+          <label class="sr-only" for="prompt">Escribe una consulta para el asistente</label><div class="flex flex-col gap-2 sm:flex-row"><textarea id="prompt" rows="2" maxlength="4000" placeholder="Ej.: Ayúdame a preparar una checklist de producción..." class="min-h-[48px] flex-1 resize-y rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white placeholder:text-slate-500" required></textarea><button id="send-btn" type="submit" class="rounded-xl border border-cyan/40 bg-cyan/10 px-5 py-3 font-semibold text-cyan transition hover:bg-cyan/20 disabled:cursor-not-allowed disabled:opacity-50">Enviar consulta ↗</button></div>
+          <p id="api-status" class="mt-2 text-[11px] text-slate-400" role="status">La contraseña se conserva solo en esta pestaña del navegador.</p>
         </form>
       </section>
     </main>
 
-    <footer class="panel glow-orange mt-5 flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex items-center gap-3">
-        <div class="flex h-7 items-center gap-1" aria-hidden="true"><i class="wave w-1 rounded-full bg-orange"></i><i class="wave w-1 rounded-full bg-cyan"></i><i class="wave w-1 rounded-full bg-orange"></i><i class="wave w-1 rounded-full bg-cyan"></i><i class="wave w-1 rounded-full bg-orange"></i></div>
-        <div><p class="tech text-xs text-slate-400">COMMAND CORE <span class="text-cyan">/ READY</span></p><p class="text-xs text-slate-500">Interfaz operativa · Conexión IA protegida</p></div>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan/40 hover:text-cyan">Abrir Gemini ↗</a>
-        <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-orange/40 hover:text-orange">Abrir Claude ↗</a>
-      </div>
-    </footer>
-    <p class="py-4 text-center text-[10px] text-slate-600">SET & SOUND PRODUCCIONES SpA · La información mostrada es referencial; no publiques datos internos sensibles.</p>
+    <footer class="panel mt-5 flex flex-col gap-3 rounded-2xl border-orange/20 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p class="tech text-xs text-slate-400">COMMAND CORE <span class="text-cyan">/ READY</span></p><p class="text-xs text-slate-500">SET & SOUND PRODUCCIONES SpA · Central de comando · Valdivia</p></div><div class="flex flex-wrap gap-2"><a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 hover:border-cyan/40 hover:text-cyan">Abrir Gemini ↗</a><a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 hover:border-orange/40 hover:text-orange">Abrir Claude ↗</a></div></footer>
+    <p class="py-4 text-center text-[10px] text-slate-600">La información mostrada es referencial; no publiques datos internos sensibles.</p>
   </div>
 
   <script>
     const API_ENDPOINT = 'https://set-sound-command-center.onrender.com/api/chat';
     const ACCESS_KEY = 'setsound-dashboard-access-v1';
     const CONVERSATION_KEY = 'setsound-command-conversation-v1';
+    const cells = {
+      operations: { code: 'CELL_01 // OPERACIONES', title: '⚙ OPERACIONES', subtitle: 'LOGÍSTICA & TERRENO', summary: 'Planificación y coordinación de la operación en terreno para eventos y producciones.', items: [['Próximo hito', 'Evento · Espacio Estancilla'], ['Rider técnico', '✓ Validado'], ['Inventario base', 'Operativo'], ['Coordinación', 'Revisar fecha, disponibilidad y producción antes de publicar.']] },
+      finance: { code: 'CELL_02 // FINANZAS', title: '◈ FINANZAS', subtitle: 'CAJA & COSTOS', summary: 'Seguimiento de presupuestos, costos y documentación financiera. La información financiera real debe consultarse en el sistema interno autorizado.', items: [['Control financiero', 'Proyecciones y presupuestos'], ['Fondo imprevistos', 'Por confirmar'], ['Documentación', 'En seguimiento'], ['Acceso', 'Información reservada para el equipo autorizado.']] },
+      communications: { code: 'CELL_03 // COMUNICACIONES', title: '✦ COMUNICACIONES', subtitle: 'DISEÑO & MEDIA', summary: 'Coordinación de materiales de comunicación, diseño, kits comerciales y medios.', items: [['Proyectos de medios', 'Kits comerciales y coordinación OOH'], ['Modelo de negocio', 'Fijo / mixto'], ['Sede principal', 'Espacio Estancilla'], ['Materiales', 'Confirmar versión vigente antes de publicar.']] },
+      protocols: { code: 'CELL_04 // CONTROL DE PROTOCOLOS', title: '⌕ PROTOCOLOS', subtitle: 'CALIDAD & NORMAS', summary: 'Revisión de documentos y protocolos previos a cada producción.', items: [['Riders técnicos', '✓ OK'], ['Call sheets & timelines', '✓ OK'], ['Normativa vial', 'En revisión'], ['Última verificación local', 'Revisar y registrar con el equipo.']] }
+    };
     const clock = document.getElementById('clock');
-    const syncTime = document.getElementById('sync-time');
+    const detailPanel = document.getElementById('cell-details');
+    const detailItems = document.getElementById('detail-items');
+    const cellButtons = [...document.querySelectorAll('[data-cell]')];
     const log = document.getElementById('chat-log');
     const form = document.getElementById('chat-form');
     const promptInput = document.getElementById('prompt');
     const passwordInput = document.getElementById('access-password');
-    const saveAccessButton = document.getElementById('save-access');
     const sendButton = document.getElementById('send-btn');
     const apiStatus = document.getElementById('api-status');
     let conversationId = null;
     let accessPassword = '';
-
     try { conversationId = localStorage.getItem(CONVERSATION_KEY); } catch (_) { /* Storage is optional. */ }
     try { accessPassword = sessionStorage.getItem(ACCESS_KEY) || ''; } catch (_) { /* Storage is optional. */ }
 
     function updateClock() {
-      const now = new Date();
-      const value = new Intl.DateTimeFormat('es-CL', { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now);
-      clock.textContent = value;
-      syncTime.textContent = value;
+      clock.textContent = new Intl.DateTimeFormat('es-CL', { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date());
     }
     updateClock();
     setInterval(updateClock, 1000);
 
+    function openCell(key, button) {
+      const cell = cells[key];
+      if (!cell) return;
+      document.getElementById('detail-code').textContent = cell.code;
+      document.getElementById('detail-title').textContent = cell.title;
+      document.getElementById('detail-subtitle').textContent = cell.subtitle;
+      document.getElementById('detail-summary').textContent = cell.summary;
+      detailItems.replaceChildren();
+      for (const [label, value] of cell.items) {
+        const item = document.createElement('div');
+        item.className = 'rounded-xl border border-slate-800 bg-slate-950/55 p-4';
+        const heading = document.createElement('p');
+        heading.className = 'tech text-[11px] tracking-wide text-slate-500';
+        heading.textContent = label;
+        const description = document.createElement('p');
+        description.className = 'mt-2 text-sm font-medium text-slate-200';
+        description.textContent = value;
+        item.append(heading, description);
+        detailItems.append(item);
+      }
+      detailPanel.classList.remove('hidden');
+      cellButtons.forEach(button => button.setAttribute('aria-expanded', String(button === cellButtons.find(item => item.dataset.cell === key)));
+      button.setAttribute('aria-expanded', 'true');
+      detailPanel.focus();
+      detailPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    cellButtons.forEach(button => button.addEventListener('click', () => {
+      const alreadyOpen = button.getAttribute('aria-expanded') === 'true';
+      if (alreadyOpen) {
+        detailPanel.classList.add('hidden');
+        button.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      openCell(button.dataset.cell, button);
+    }));
+    document.getElementById('close-details').addEventListener('click', () => {
+      detailPanel.classList.add('hidden');
+      cellButtons.forEach(button => button.setAttribute('aria-expanded', 'false'));
+    });
+
     function addMessage(role, text) {
       const bubble = document.createElement('div');
-      bubble.className = role === 'user'
-        ? 'ml-auto max-w-3xl whitespace-pre-wrap rounded-xl border border-slate-700 bg-slate-900 p-3 text-sm leading-relaxed text-white'
-        : 'max-w-3xl whitespace-pre-wrap rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-200';
+      bubble.className = role === 'user' ? 'ml-auto max-w-3xl whitespace-pre-wrap rounded-xl border border-slate-700 bg-slate-900 p-3 text-sm leading-relaxed text-white' : 'max-w-3xl whitespace-pre-wrap rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm leading-relaxed text-slate-200';
       const label = document.createElement('span');
       label.className = role === 'user' ? 'tech mr-2 text-slate-400' : 'tech mr-2 text-cyan';
       label.textContent = role === 'user' ? 'TÚ' : 'ASISTENTE';
       const content = document.createElement('span');
       content.textContent = text;
       bubble.append(label, content);
-      log.appendChild(bubble);
+      log.append(bubble);
       log.scrollTop = log.scrollHeight;
     }
-
     function setApiStatus(message, isError = false) {
       apiStatus.textContent = message;
-      apiStatus.className = `mt-2 text-[11px] ${isError ? 'text-orange' : 'text-slate-500'}`;
+      apiStatus.className = `mt-2 text-[11px] ${isError ? 'text-orange' : 'text-slate-400'}`;
     }
-
-    saveAccessButton.addEventListener('click', () => {
-      const candidate = passwordInput.value;
-      if (!candidate) {
-        setApiStatus('Escribe la contraseña privada que configuraste en Render.', true);
+    document.getElementById('save-access').addEventListener('click', () => {
+      if (!passwordInput.value) {
+        setApiStatus('Escribe la contraseña configurada en Render.', true);
         passwordInput.focus();
         return;
       }
-      accessPassword = candidate;
+      accessPassword = passwordInput.value;
       try { sessionStorage.setItem(ACCESS_KEY, accessPassword); } catch (_) { /* Storage is optional. */ }
       passwordInput.value = '';
-      setApiStatus('Contraseña guardada solo en esta pestaña del navegador.');
+      setApiStatus('Contraseña guardada solo en esta pestaña.');
     });
-
-    form.addEventListener('submit', async (event) => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
       const message = promptInput.value.trim();
       if (!message) return;
       if (!accessPassword) {
-        setApiStatus('Primero escribe la contraseña privada y pulsa “Usar contraseña en esta pestaña”.', true);
+        setApiStatus('Primero ingresa la contraseña privada y pulsa “Usar contraseña en esta pestaña”.', true);
         passwordInput.focus();
         return;
       }
-
       const provider = document.getElementById('provider').value;
       addMessage('user', message);
       promptInput.value = '';
       sendButton.disabled = true;
       sendButton.textContent = 'Consultando…';
       setApiStatus(`Enviando consulta a ${provider}…`);
-
       try {
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessPassword}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessPassword}` },
           body: JSON.stringify({ provider, message, conversationId })
         });
         const data = await response.json().catch(() => ({}));
         if (response.status === 401) {
           accessPassword = '';
           try { sessionStorage.removeItem(ACCESS_KEY); } catch (_) { /* Storage is optional. */ }
-          setApiStatus('La contraseña no es correcta. Escríbela nuevamente.', true);
+          setApiStatus('Contraseña incorrecta. Escríbela nuevamente.', true);
           throw new Error('Acceso denegado. Revisa la contraseña privada.');
         }
         if (!response.ok) throw new Error(data.error || `El servidor respondió ${response.status}.`);
@@ -271,9 +240,7 @@
         setApiStatus(`Respuesta recibida de ${provider}.`);
       } catch (error) {
         addMessage('assistant', `No se pudo completar la consulta: ${error.message}`);
-        if (!apiStatus.textContent.includes('contraseña no es correcta')) {
-          setApiStatus('El backend rechazó o no pudo completar la consulta. Verifica su configuración.', true);
-        }
+        if (!apiStatus.textContent.includes('Contraseña incorrecta')) setApiStatus('El backend rechazó o no pudo completar la consulta. Revisa su configuración.', true);
       } finally {
         sendButton.disabled = false;
         sendButton.textContent = 'Enviar consulta ↗';
