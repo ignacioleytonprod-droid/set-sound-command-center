@@ -1,7 +1,7 @@
 {
   "name": "set-sound-ai-api",
-  "version": "1.1.0",
-  "description": "Shared events and secure AI API for Set & Sound dashboard",
+  "version": "1.2.0",
+  "description": "Shared events, cell activity log, and secure AI API for Set & Sound dashboard",
   "private": true,
   "main": "server.js",
   "scripts": {
