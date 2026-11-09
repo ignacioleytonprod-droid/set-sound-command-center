@@ -35,14 +35,28 @@ function passwordsMatch(provided, expected) {
   return providedBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(providedBuffer, expectedBuffer);
 }
 
+function getGeminiModel() {
+  // Render's GEMINI_MODEL should be a model ID like "gemini-2.0-flash".
+  // Accept "models/<id>" too, but avoid constructing an invalid models/models/<id> path.
+  const configured = (process.env.GEMINI_MODEL || 'gemini-2.0-flash').trim();
+  const model = configured.replace(/^models\//i, '');
+  if (!model || model.includes('/') || model.includes(':')) {
+    throw new Error('GEMINI_MODEL debe ser solo el ID del modelo, por ejemplo gemini-2.0-flash; no incluyas "models/" ni una URL.');
+  }
+  return model;
+}
+
 async function callGemini(message) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('El administrador aún no configuró la clave de Gemini.');
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const model = getGeminiModel();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey
+    },
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: message }] }],
       generationConfig: { temperature: 0.7, maxOutputTokens: 800 }
@@ -51,8 +65,9 @@ async function callGemini(message) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
+    // Do not log request headers, API keys, or full upstream request data.
     console.error('Gemini upstream error:', response.status, data?.error?.message || 'Unknown error');
-    throw new Error('Gemini no pudo procesar la consulta. Revisa la clave y el modelo configurado.');
+    throw new Error('Gemini no pudo procesar la consulta. Revisa que GEMINI_MODEL sea un ID disponible y que la clave tenga acceso.');
   }
   return data?.candidates?.[0]?.content?.parts?.map(part => part.text).join('\n') || 'Sin respuesta disponible.';
 }
