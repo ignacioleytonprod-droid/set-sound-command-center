@@ -1,102 +1,621 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0a0e17">
-  <meta name="description" content="Centro de comando operativo de Set & Sound Producciones SpA.">
-  <title>SET & SOUND | Central de Comando</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{carbon:'#0a0e17',panel:'#111827',cyan:'#00f0ff',orange:'#ff5500',green:'#00ff66',line:'#1f293d'}}}};</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <style>
-    :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0a0e17;color:#e2e8f0;font-family:Inter,sans-serif}.tech{font-family:'Share Tech Mono',monospace}.panel{background:linear-gradient(145deg,rgba(17,24,39,.96),rgba(10,14,23,.94));border:1px solid #1f293d;backdrop-filter:blur(12px)}.cell-card{min-height:180px;transition:transform .2s,border-color .2s,box-shadow .2s}.cell-card:hover,.cell-card[aria-pressed=true]{transform:translateY(-2px);border-color:rgba(0,240,255,.55);box-shadow:0 10px 28px rgba(0,240,255,.09)}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #00f0ff;outline-offset:3px}.calendar-cell{min-height:94px}.scroll{scrollbar-color:#334155 #0f172a}@media(max-width:640px){.calendar-cell{min-height:70px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition-duration:.01ms!important}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SET & SOUND | Central de Comando</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="[suspicious link removed]"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="[suspicious link removed]">
+    <!-- Google Fonts -->
+    <link href="[suspicious link removed]" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#0B0F17',
+                            card: '#131924',
+                            border: '#1E293B',
+                            accent: '#10B981',
+                            cyan: '#06B6D4',
+                            warning: '#F59E0B',
+                            danger: '#EF4444'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0B0F17; color: #F8FAFC; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-panel { background: rgba(19, 25, 36, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0B0F17; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+    </style>
 </head>
-<body class="min-h-screen">
-  <div class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-    <header class="panel mb-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border-cyan/30 p-4 shadow-[0_0_24px_rgba(0,240,255,.08)] sm:p-5">
-      <div><p class="tech text-lg tracking-wider text-white">SET & SOUND <span class="text-cyan">PRODUCCIONES SpA</span></p><p class="text-xs text-slate-400">CENTRAL DE COMANDO <span class="px-1 text-slate-600">/</span> VALDIVIA</p></div>
-      <div class="flex flex-wrap items-center gap-2"><label for="dashboard-password" class="sr-only">Contraseña privada</label><input id="dashboard-password" type="password" autocomplete="current-password" placeholder="Contraseña privada" class="w-48 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><button id="connect" type="button" class="rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-2 text-sm text-cyan">Conectar</button><span id="connection" class="tech text-xs text-orange">DESCONECTADO</span><time id="clock" class="tech rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-cyan">--:--:--</time></div>
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- BARRA SUPERIOR DE AUTENTICACIÓN Y ESTADO DE BACKEND -->
+    <header class="glass-panel sticky top-0 z-40 px-4 py-3 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-extrabold text-black text-xl shadow-lg shadow-emerald-500/20">
+                    S&S
+                </div>
+                <div>
+                    <h1 class="font-extrabold tracking-wide text-lg text-white flex items-center gap-2">
+                        SET & SOUND <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">COMMAND CENTER</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Valdivia, Chile • Operaciones de Producción & Eventos</p>
+                </div>
+            </div>
+
+            <!-- CONTROLES DE CONEXIÓN CON RENDER -->
+            <div class="flex flex-wrap items-center gap-2 text-xs w-full md:w-auto justify-end">
+                <div id="statusBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span id="statusText">SIN CONECTAR</span>
+                </div>
+
+                <input type="text" id="apiBaseInput" placeholder="URL Backend Render" 
+                    class="bg-slate-900/80 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono text-xs w-48"
+                    value="[suspicious link removed]">
+
+                <input type="password" id="passcodeInput" placeholder="Contraseña Privada" 
+                    class="bg-slate-900/80 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono text-xs w-36">
+
+                <button onclick="checkConnection()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shadow-md shadow-emerald-600/20">
+                    <i class="fa-solid fa-plug"></i> Conectar
+                </button>
+            </div>
+        </div>
     </header>
-    <main class="flex-1">
-      <div class="mb-4"><p class="tech text-xs tracking-[.2em] text-cyan">SISTEMA OPERATIVO // VISTA GENERAL</p><h1 class="mt-1 text-2xl font-semibold text-white sm:text-3xl">Centro de mando</h1><p class="mt-2 text-sm text-slate-400">Tres vistas centrales para coordinar células, agenda y memoria compartida.</p></div>
-      <nav class="panel mb-5 grid grid-cols-3 gap-1 rounded-xl p-1" role="tablist" aria-label="Vistas centrales">
-        <button type="button" role="tab" id="tab-overview" aria-controls="view-overview" aria-selected="true" data-tab="overview" class="rounded-lg bg-cyan/10 px-2 py-3 text-sm font-semibold text-cyan sm:text-base">General</button>
-        <button type="button" role="tab" id="tab-agenda" aria-controls="view-agenda" aria-selected="false" data-tab="agenda" class="rounded-lg px-2 py-3 text-sm text-slate-400 hover:text-white sm:text-base">Agenda / Calendario</button>
-        <button type="button" role="tab" id="tab-log" aria-controls="view-log" aria-selected="false" data-tab="log" class="rounded-lg px-2 py-3 text-sm text-slate-400 hover:text-white sm:text-base">Bitácora</button>
-      </nav>
 
-      <section id="view-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
-        <div class="mb-3 flex flex-wrap items-end justify-between gap-2"><div><p class="tech text-xs tracking-widest text-cyan">UNIDADES OPERATIVAS</p><h2 class="mt-1 text-xl font-semibold text-white">Las cuatro células</h2></div><p class="text-xs text-slate-500">Selecciona una para filtrar la agenda y el contexto de IA.</p></div>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Seleccionar célula">
-          <button type="button" class="cell-card panel rounded-2xl p-5 text-left" data-cell="1" aria-pressed="false"><span class="flex justify-between"><span class="tech text-xs tracking-widest text-slate-500">CELL_01</span><span class="text-[10px] text-cyan">LOGÍSTICA & TERRENO</span></span><span class="mt-6 block text-3xl text-cyan">⚙</span><span class="tech mt-2 block text-xl text-white">OPERACIONES</span><span class="mt-2 block text-sm text-slate-400">Producción, logística y coordinación.</span><span class="mt-4 block h-1.5 overflow-hidden rounded bg-slate-800"><span data-progress="1" class="block h-full bg-cyan" style="width:0%"></span></span><span data-progress-label="1" class="tech mt-2 block text-xs text-slate-400">0% · 0 eventos</span></button>
-          <button type="button" class="cell-card panel rounded-2xl p-5 text-left" data-cell="2" aria-pressed="false"><span class="flex justify-between"><span class="tech text-xs tracking-widest text-slate-500">CELL_02</span><span class="text-[10px] text-orange">CAJA & COSTOS</span></span><span class="mt-6 block text-3xl text-orange">◈</span><span class="tech mt-2 block text-xl text-white">FINANZAS</span><span class="mt-2 block text-sm text-slate-400">Ingresos, egresos y balances compartidos.</span><span class="mt-4 block h-1.5 overflow-hidden rounded bg-slate-800"><span data-progress="2" class="block h-full bg-orange" style="width:0%"></span></span><span data-progress-label="2" class="tech mt-2 block text-xs text-slate-400">0% · 0 eventos</span></button>
-          <button type="button" class="cell-card panel rounded-2xl p-5 text-left" data-cell="3" aria-pressed="false"><span class="flex justify-between"><span class="tech text-xs tracking-widest text-slate-500">CELL_03</span><span class="text-[10px] text-cyan">DISEÑO & MEDIA</span></span><span class="mt-6 block text-3xl text-cyan">✦</span><span class="tech mt-2 block text-xl text-white">COMUNICACIONES</span><span class="mt-2 block text-sm text-slate-400">Diseño, difusión y campañas.</span><span class="mt-4 block h-1.5 overflow-hidden rounded bg-slate-800"><span data-progress="3" class="block h-full bg-cyan" style="width:0%"></span></span><span data-progress-label="3" class="tech mt-2 block text-xs text-slate-400">0% · 0 eventos</span></button>
-          <button type="button" class="cell-card panel rounded-2xl p-5 text-left" data-cell="4" aria-pressed="false"><span class="flex justify-between"><span class="tech text-xs tracking-widest text-slate-500">CELL_04</span><span class="text-[10px] text-orange">CALIDAD & NORMAS</span></span><span class="mt-6 block text-3xl text-orange">⌕</span><span class="tech mt-2 block text-xl text-white">PROTOCOLOS</span><span class="mt-2 block text-sm text-slate-400">Riders, documentación y control.</span><span class="mt-4 block h-1.5 overflow-hidden rounded bg-slate-800"><span data-progress="4" class="block h-full bg-orange" style="width:0%"></span></span><span data-progress-label="4" class="tech mt-2 block text-xs text-slate-400">0% · 0 eventos</span></button>
-        </div>
-        <section class="panel mt-5 rounded-2xl p-4 sm:p-5" aria-labelledby="summary-title"><div class="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p class="tech text-xs tracking-widest text-cyan">PANEL GENERAL // TODAS LAS CÉLULAS</p><h2 id="summary-title" class="mt-1 text-xl font-semibold text-white">Resumen de avance y finanzas</h2></div><button type="button" data-open-tab="agenda" class="rounded-lg border border-cyan/30 px-3 py-2 text-xs text-cyan">Abrir agenda</button></div><div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><div class="rounded-xl border border-slate-800 bg-slate-950/55 p-4"><p class="tech text-xs text-slate-500">EVENTOS ACTIVOS</p><p id="active-count" class="mt-2 text-xl font-semibold text-white">0</p></div><div class="rounded-xl border border-slate-800 bg-slate-950/55 p-4"><p class="tech text-xs text-slate-500">INGRESOS PROYECTADOS</p><p id="income-total" class="mt-2 text-xl font-semibold text-green">$0</p></div><div class="rounded-xl border border-slate-800 bg-slate-950/55 p-4"><p class="tech text-xs text-slate-500">EGRESOS PROYECTADOS</p><p id="expense-total" class="mt-2 text-xl font-semibold text-orange">$0</p></div><div class="rounded-xl border border-slate-800 bg-slate-950/55 p-4"><p class="tech text-xs text-slate-500">BALANCE PROYECTADO</p><p id="balance-total" class="mt-2 text-xl font-semibold text-cyan">$0</p></div></div><div class="mt-4 border-t border-slate-800 pt-4"><p class="tech mb-2 text-xs text-slate-500">PRÓXIMOS EVENTOS</p><div id="overview-events" class="divide-y divide-slate-800"><p class="py-3 text-sm text-slate-400">Conecta para ver eventos.</p></div></div></section>
-        <section class="panel mt-5 overflow-hidden rounded-2xl" aria-labelledby="assistant-title"><div class="flex flex-col gap-3 border-b border-slate-800 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"><div><p class="tech text-xs tracking-[.2em] text-cyan">AI_INTERFACE // CONTEXTO COMPARTIDO</p><h2 id="assistant-title" class="mt-1 text-lg font-semibold text-white">Asistente de producción</h2></div><label class="flex items-center gap-2 text-xs text-slate-400" for="provider">MODELO<select id="provider" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="gemini">Gemini</option><option value="claude">Claude</option></select></label></div><div id="chat-log" class="scroll flex max-h-72 min-h-24 flex-col gap-3 overflow-y-auto p-4 sm:p-5" aria-live="polite"><div class="max-w-3xl rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm text-slate-300">El asistente recibe eventos activos y bitácora reciente como contexto.</div></div><form id="chat-form" class="border-t border-slate-800 p-3 sm:p-4"><div class="flex flex-col gap-2 sm:flex-row"><label class="sr-only" for="prompt">Consulta</label><textarea id="prompt" rows="2" maxlength="4000" placeholder="Consulta sobre la operación, agenda o decisiones…" required class="min-h-[48px] flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white"></textarea><button id="send-btn" type="submit" class="rounded-xl border border-cyan/40 bg-cyan/10 px-5 py-3 font-semibold text-cyan">Enviar ↗</button></div><p id="api-status" class="mt-2 text-[11px] text-slate-400" role="status">Conecta con la contraseña privada para usar el asistente.</p></form></section>
-      </section>
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <section id="view-agenda" role="tabpanel" aria-labelledby="tab-agenda" data-panel="agenda" hidden>
-        <div class="panel mb-5 rounded-2xl p-4 sm:p-5"><div class="mb-4 flex flex-wrap items-end justify-between gap-3"><div><p class="tech text-xs tracking-widest text-cyan">AGENDA INTERCONECTADA</p><h2 class="mt-1 text-xl font-semibold text-white">Crear evento</h2><p class="mt-1 text-sm text-slate-400">Un evento puede compartirse con una o varias células.</p></div><p id="event-status" class="text-xs text-slate-400" role="status">Conecta para guardar eventos.</p></div>
-          <form id="event-form" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><label class="text-xs text-slate-400 lg:col-span-2">Nombre<input id="event-title" required maxlength="160" placeholder="Producción, evento o entrega" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></label><label class="text-xs text-slate-400">Fecha<input id="event-date" required type="date" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></label><label class="text-xs text-slate-400">Estado<select id="event-state" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="planned">Planificado</option><option value="in-progress">En curso</option><option value="done">Realizado</option><option value="cancelled">Cancelado</option></select></label>
-            <fieldset class="rounded-lg border border-slate-800 p-3 sm:col-span-2 lg:col-span-4"><legend class="px-1 text-xs text-slate-400">Células vinculadas</legend><div class="flex flex-wrap gap-x-5 gap-y-2"><label class="flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" name="cells" value="1" class="accent-cyan"> Operaciones</label><label class="flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" name="cells" value="2" class="accent-cyan"> Finanzas</label><label class="flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" name="cells" value="3" class="accent-cyan"> Comunicaciones</label><label class="flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" name="cells" value="4" class="accent-cyan"> Protocolos</label></div></fieldset>
-            <label class="text-xs text-slate-400 lg:col-span-2">Lugar<input id="event-location" maxlength="200" placeholder="Lugar o dirección" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></label><label class="text-xs text-slate-400">Ingreso estimado CLP<input id="event-income" type="number" min="0" step="1" value="0" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></label><label class="text-xs text-slate-400">Egreso estimado CLP<input id="event-expense" type="number" min="0" step="1" value="0" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></label><label class="text-xs text-slate-400 sm:col-span-2 lg:col-span-4">Notas<textarea id="event-notes" maxlength="2000" rows="2" placeholder="Tareas, responsables, decisiones o detalles…" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></textarea></label><div class="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-4"><button id="save-event" type="submit" class="rounded-xl border border-cyan/40 bg-cyan/10 px-5 py-3 font-semibold text-cyan">Guardar evento ↗</button><button id="cancel-edit" type="button" class="hidden rounded-xl border border-slate-700 px-4 py-3 text-sm text-slate-300">Cancelar</button></div></form>
-        </div>
-        <section class="panel overflow-hidden rounded-2xl" aria-labelledby="agenda-title"><div class="flex flex-col gap-3 border-b border-slate-800 p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5"><div><p class="tech text-xs tracking-widest text-cyan">EVENTOS COMPARTIDOS</p><h2 id="agenda-title" class="mt-1 text-xl font-semibold text-white">Agenda general</h2></div><div class="flex flex-wrap gap-2"><button id="connect-google-calendar" type="button" class="rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-2 text-xs text-cyan">📅 Google Calendar</button><select id="agenda-filter" aria-label="Filtrar eventos por célula" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-300"><option value="all">Todas las células</option><option value="1">Operaciones</option><option value="2">Finanzas</option><option value="3">Comunicaciones</option><option value="4">Protocolos</option></select><button class="view-btn rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-2 text-xs text-cyan" data-view="list" aria-pressed="true">Lista</button><button class="view-btn rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300" data-view="calendar" aria-pressed="false">Calendario</button><button class="view-btn rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300" data-view="finance" aria-pressed="false">Finanzas</button></div></div><div id="calendar-view" class="hidden p-4 sm:p-5"><div class="mb-3 flex items-center justify-between"><button id="month-prev" type="button" aria-label="Mes anterior" class="rounded-lg border border-slate-700 px-3 py-2 text-slate-300">←</button><h3 id="month-label" class="tech text-sm text-white"></h3><button id="month-next" type="button" aria-label="Mes siguiente" class="rounded-lg border border-slate-700 px-3 py-2 text-slate-300">→</button></div><div class="grid grid-cols-7 border-l border-t border-slate-800 text-center"><div class="border-b border-r border-slate-800 p-2 text-[10px] text-slate-500">LUN</div><div class="border-b border-r border-slate-800 p-2 text-[10px] text-slate-500">MAR</div><div class="border-b border-r border-slate-800 p-2 text-[10px] text-slate-500">MIÉ</div><div class="border-b border-r border-slate-800 p-2 text-[10px] text-slate-500">JUE</div><div class="border-b border-r border-slate-800 p-2 text-[10px] text-slate-500">VIE</div><div class="border-b border-r border-slate-800 p-2 text-[10px] text-slate-500">SÁB</div><div class="border-b border-r border-slate-800 p-2 text-[10px] text-slate-500">DOM</div></div><div id="calendar-grid" class="grid grid-cols-7 border-l border-slate-800"></div></div><div id="google-calendar-panel" class="border-t border-slate-800 bg-slate-950/40 p-4 sm:p-5"><div class="flex items-center justify-between gap-3"><p class="tech text-xs tracking-widest text-cyan">GOOGLE CALENDAR PERSONAL</p><span id="google-calendar-status" class="text-xs text-slate-400">Sin conectar</span></div><div id="google-calendar-events" class="mt-3 space-y-2 text-sm text-slate-300">Conecta tu calendario personal para ver eventos aquí.</div></div><div id="events-list" class="divide-y divide-slate-800"><p class="p-5 text-sm text-slate-400">Conecta para ver los eventos.</p></div></section>
-      </section>
+        <!-- COLUMNA IZQUIERDA: MÉTRICAS Y AGENDA (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-6">
 
-      <section id="view-log" role="tabpanel" aria-labelledby="tab-log" data-panel="log" hidden>
-        <section class="panel overflow-hidden rounded-2xl" aria-labelledby="log-title"><div class="border-b border-slate-800 p-4 sm:p-5"><p class="tech text-xs tracking-widest text-cyan">REGISTRO COMPARTIDO // HISTORIAL</p><h2 id="log-title" class="mt-1 text-xl font-semibold text-white">Bitácora de las células</h2><p class="mt-1 text-sm text-slate-400">Los cambios de eventos se guardan automáticamente. Registra aquí acuerdos y novedades.</p></div>
-          <form id="log-form" class="grid gap-3 border-b border-slate-800 p-4 sm:grid-cols-2 sm:p-5"><label class="text-xs text-slate-400">Autor<input id="log-author" required maxlength="80" placeholder="Nombre" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></label><label class="text-xs text-slate-400">Célula<select id="log-cell" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="1">CELL_01 · Operaciones</option><option value="2">CELL_02 · Finanzas</option><option value="3">CELL_03 · Comunicaciones</option><option value="4">CELL_04 · Protocolos</option></select></label><label class="text-xs text-slate-400 sm:col-span-2">Evento relacionado (opcional)<select id="log-event" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="">Sin evento asociado</option></select></label><label class="text-xs text-slate-400 sm:col-span-2">Novedad, acuerdo o decisión<textarea id="log-message" required maxlength="3000" rows="3" placeholder="Escribe la entrada de bitácora…" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></textarea></label><div class="flex flex-wrap items-center gap-3 sm:col-span-2"><button id="save-log" type="submit" class="rounded-xl border border-cyan/40 bg-cyan/10 px-5 py-3 font-semibold text-cyan">Registrar en bitácora ↗</button><p id="log-status" class="text-xs text-slate-400" role="status">Conecta para guardar.</p></div></form>
-          <div class="flex flex-wrap items-end justify-between gap-3 p-4 sm:p-5"><div><p class="tech text-xs text-slate-500">ÚLTIMOS MOVIMIENTOS</p><p class="text-sm text-slate-300">Historial de eventos y acuerdos</p></div><div class="flex gap-2"><label class="sr-only" for="log-filter">Filtrar bitácora</label><select id="log-filter" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-300"><option value="">Todas las células</option><option value="1">Operaciones</option><option value="2">Finanzas</option><option value="3">Comunicaciones</option><option value="4">Protocolos</option></select><button id="refresh-log" type="button" class="rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300">Actualizar</button></div></div><div id="log-list" class="scroll grid max-h-[560px] gap-3 overflow-y-auto p-4 pt-0 sm:p-5 sm:pt-0"><p class="text-sm text-slate-400">Conecta para ver la bitácora.</p></div>
+            <!-- RESUMEN FINANCIERO AUTOMÁTICO -->
+            <div class="glass-panel p-5 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                    <div class="text-slate-400 text-xs font-medium">Ingresos Proyectados</div>
+                    <div id="metricRevenue" class="text-lg font-mono font-bold text-emerald-400 mt-1">$0 CLP</div>
+                </div>
+                <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                    <div class="text-slate-400 text-xs font-medium">Gastos Proyectados</div>
+                    <div id="metricExpenses" class="text-lg font-mono font-bold text-rose-400 mt-1">$0 CLP</div>
+                </div>
+                <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                    <div class="text-slate-400 text-xs font-medium">Utilidad Estimada</div>
+                    <div id="metricNet" class="text-lg font-mono font-bold text-cyan-400 mt-1">$0 CLP</div>
+                </div>
+                <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                    <div class="text-slate-400 text-xs font-medium flex items-center gap-1">
+                        Reserva Mantención <i class="fa-solid fa-shield-halved text-amber-400 text-[10px]" title="20% intocable para equipos"></i>
+                    </div>
+                    <div id="metricMaintenance" class="text-lg font-mono font-bold text-amber-400 mt-1">$0 CLP</div>
+                </div>
+            </div>
+
+            <!-- ENCABEZADO DE AGENDA -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-check text-emerald-400 text-lg"></i>
+                    <h2 class="text-lg font-bold text-white">Agenda de Eventos & Arriendos</h2>
+                    <span id="eventCountBadge" class="bg-slate-800 text-slate-300 text-xs font-mono px-2 py-0.5 rounded-full">0 eventos</span>
+                </div>
+
+                <button onclick="toggleModal('eventModal', true)" class="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> Nuevo Evento
+                </button>
+            </div>
+
+            <!-- FILTROS POR CÉLULA -->
+            <div class="flex flex-wrap gap-2 text-xs">
+                <button onclick="filterEvents('ALL')" class="cell-filter-btn active bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-lg transition-all font-medium">
+                    Todas las Células
+                </button>
+                <button onclick="filterEvents('CELL_01')" class="cell-filter-btn bg-slate-900 text-slate-400 border border-slate-800 hover:text-white px-3 py-1.5 rounded-lg transition-all font-medium">
+                    Célula 1: Operaciones
+                </button>
+                <button onclick="filterEvents('CELL_02')" class="cell-filter-btn bg-slate-900 text-slate-400 border border-slate-800 hover:text-white px-3 py-1.5 rounded-lg transition-all font-medium">
+                    Célula 2: Finanzas
+                </button>
+                <button onclick="filterEvents('CELL_03')" class="cell-filter-btn bg-slate-900 text-slate-400 border border-slate-800 hover:text-white px-3 py-1.5 rounded-lg transition-all font-medium">
+                    Célula 3: Marketing
+                </button>
+                <button onclick="filterEvents('CELL_04')" class="cell-filter-btn bg-slate-900 text-slate-400 border border-slate-800 hover:text-white px-3 py-1.5 rounded-lg transition-all font-medium">
+                    Célula 4: Calidad
+                </button>
+            </div>
+
+            <!-- TARJETAS DE EVENTOS -->
+            <div id="eventsContainer" class="space-y-3 custom-scrollbar overflow-y-auto max-h-[480px] pr-1">
+                <!-- Se llena dinámicamente -->
+            </div>
+
+            <!-- BITÁCORA UNIFICADA -->
+            <div class="glass-panel p-5 rounded-2xl flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-white flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-box-archive text-cyan-400"></i> Bitácora Unificada de Acuerdos (SSOT)
+                    </h3>
+                    <span class="text-[10px] text-slate-400 font-mono">Sincronización Multi-Célula</span>
+                </div>
+
+                <div class="flex gap-2">
+                    <select id="logCellSelect" class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200">
+                        <option value="CELL_01">Célula 1: Operaciones</option>
+                        <option value="CELL_02">Célula 2: Finanzas</option>
+                        <option value="CELL_03">Célula 3: Marketing</option>
+                        <option value="CELL_04">Célula 4: Calidad</option>
+                    </select>
+                    <input type="text" id="logTextInput" placeholder="Escribe un acuerdo o acta de reunión..." class="flex-1 bg-slate-900 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-cyan-500">
+                    <button onclick="addLogEntry()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition-all">
+                        Registrar
+                    </button>
+                </div>
+
+                <div id="logbookFeed" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar text-xs">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
         </section>
-      </section>
+
+        <!-- COLUMNA DERECHA: CHAT DE IA INTERCONECTADO (5 Cols) -->
+        <section class="lg:col-span-5 flex flex-col h-[750px] glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+            
+            <div class="p-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                            AI INTERFACE <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30 font-mono">SSOT CONNECTED</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400">Inyección de contexto dinámico</p>
+                    </div>
+                </div>
+
+                <!-- CONMUTADOR GEMINI / CLAUDE -->
+                <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+                    <button id="btnModelGemini" onclick="selectAIModel('gemini')" class="px-3 py-1 rounded-lg text-emerald-400 bg-slate-800 transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-sparkles text-[10px]"></i> Gemini
+                    </button>
+                    <button id="btnModelClaude" onclick="selectAIModel('claude')" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-robot text-[10px]"></i> Claude
+                    </button>
+                </div>
+            </div>
+
+            <!-- ÁREA DE MENSAJES -->
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-3 text-xs">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 text-slate-300">
+                    <div class="font-semibold text-emerald-400 flex items-center gap-1.5 mb-1">
+                        <i class="fa-solid fa-circle-check"></i> Asistente de Operaciones Activo
+                    </div>
+                    Hola Sebastián. El chat está sincronizado con la bitácora y la agenda de eventos de Set & Sound Producciones SpA. Puedes consultarme disponibilidad de fechas, riders técnicos o presupuestos.
+                </div>
+            </div>
+
+            <!-- ENTRADA DE TEXTO DEL CHAT -->
+            <div class="p-3 border-t border-slate-800 bg-slate-900/40 flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <textarea id="chatInput" rows="2" placeholder="Pregunta a la IA (ej. ¿Tenemos parlantes libres para este sábado?)..." 
+                        class="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none custom-scrollbar"></textarea>
+                    <button onclick="sendChatMessage()" class="h-full bg-emerald-600 hover:bg-emerald-500 text-white px-4 rounded-xl font-bold transition-all flex items-center justify-center shadow-lg shadow-emerald-600/20">
+                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono px-1">
+                    <span>Contexto: Agenda + Bitácora + Equipos</span>
+                    <span id="activeModelLabel">Modelo: Gemini REST</span>
+                </div>
+            </div>
+        </section>
+
     </main>
-    <footer class="panel mt-5 rounded-2xl p-4 text-xs text-slate-500">SET & SOUND PRODUCCIONES SpA · Panel general, agenda y bitácora compartida · Información financiera referencial hasta confirmar.</footer>
-  </div>
-  <script>
-    (()=>{
-      'use strict';
-      const BASE='https://set-sound-command-center.onrender.com',EVENTS_API=BASE+'/api/events',LOG_API=BASE+'/api/bitacora',CHAT_API=BASE+'/api/chat',GOOGLE_CALENDAR_API=BASE+'/api/google-calendar',KEY='setsound-dashboard-access-v1',CONV_KEY='setsound-command-conversation-v1';
-      const cells={1:'Operaciones',2:'Finanzas',3:'Comunicaciones',4:'Protocolos'},states={planned:'Planificado','in-progress':'En curso',done:'Realizado',cancelled:'Cancelado'};
-      const money=new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}),$=id=>document.getElementById(id);
-      let password='',events=[],entries=[],filter='all',view='list',editing=null,conversationId=null,month=new Date(),tab='overview',googleCalendarEvents=[];
-      try{password=sessionStorage.getItem(KEY)||''}catch(_){}try{conversationId=localStorage.getItem(CONV_KEY)}catch(_{})
-      function setEventStatus(text,error=false){$('event-status').textContent=text;$('event-status').className=`text-xs ${error?'text-orange':'text-slate-400'}`}
-      function setLogStatus(text,error=false){$('log-status').textContent=text;$('log-status').className=`text-xs ${error?'text-orange':'text-slate-400'}`}
-      function setGoogleCalendarStatus(text,error=false){const node=$('google-calendar-status');node.textContent=text;node.className=`text-xs ${error?'text-orange':'text-slate-400'}`}
-      function headers(){return {'Content-Type':'application/json','Authorization':`Bearer ${password}`}}
-      async function request(url,options={}){const response=await fetch(url,{...options,headers:{...headers(),...(options.headers||{})}});const data=await response.json().catch(()=>({}));if(!response.ok){if(response.status===401){password='';try{sessionStorage.removeItem(KEY)}catch(_){}$('connection').textContent='CONTRASEÑA INVÁLIDA'}throw new Error(data.error||`Error ${response.status}`)}return data}
-      function activateTab(name){tab=name;document.querySelectorAll('[data-tab]').forEach(button=>{const active=button.dataset.tab===name;button.setAttribute('aria-selected',String(active));button.className=`rounded-lg px-2 py-3 text-sm sm:text-base ${active?'bg-cyan/10 font-semibold text-cyan':'text-slate-400 hover:text-white'}`});document.querySelectorAll('[data-panel]').forEach(panel=>{panel.hidden=panel.dataset.panel!==name});if(name==='agenda')renderEvents();if(name==='log')loadLogs()}
-      function dateLabel(iso){return iso?new Intl.DateTimeFormat('es-CL',{timeZone:'UTC',day:'2-digit',month:'short',year:'numeric'}).format(new Date(`${iso}T12:00:00Z`)):'Sin fecha'}
-      function dateOnly(iso){const parsed=iso?new Date(iso):new Date(NaN);return Number.isNaN(parsed.getTime())?'':new Intl.DateTimeFormat('es-CL',{timeZone:'UTC',day:'2-digit',month:'short'}).format(parsed)}
-      function fillEventOptions(){const select=$('log-event'),current=select.value;select.replaceChildren();const blank=document.createElement('option');blank.value='';blank.textContent='Sin evento asociado';select.append(blank);events.forEach(event=>{const option=document.createElement('option');option.value=event.id;option.textContent=`${event.eventDate} · ${event.title}`;select.append(option)});if([...select.options].some(option=>option.value===current))select.value=current}
-      function updateOverview(){const active=events.filter(event=>event.status!=='cancelled'),income=active.reduce((sum,event)=>sum+Number(event.incomeClp||0),0),expense=active.reduce((sum,event)=>sum+Number(event.expenseClp||0),0);$('active-count').textContent=String(active.length);$('income-total').textContent=money.format(income);$('expense-total').textContent=money.format(expense);$('balance-total').textContent=money.format(income-expense);$('balance-total').className=`mt-2 text-xl font-semibold ${income-expense>=0?'text-cyan':'text-orange'}`;[1,2,3,4].forEach(id=>{const card=document.querySelector(`[data-cell="${id}"]`),bar=card&&card.querySelector(`[data-progress="${id}"]`),label=card&&card.querySelector(`[data-progress-label="${id}"]`);if(!bar||!label)return;const own=active.filter(event=>(event.cellIds||[]).map(Number).includes(id)),done=own.filter(event=>event.status==='done').length,pct=own.length?Math.round(done/own.length*100):0;bar.style.width=`${pct}%`;label.textContent=`${pct}% · ${done}/${own.length} eventos realizados`});const root=$('overview-events');root.replaceChildren();const upcoming=active.slice().sort((a,b)=>a.eventDate.localeCompare(b.eventDate)).slice(0,5);if(!upcoming.length){const p=document.createElement('p');p.className='py-3 text-sm text-slate-400';p.textContent='No hay eventos activos registrados.';root.append(p);return}upcoming.forEach(event=>{const row=document.createElement('div');row.className='flex flex-wrap items-center justify-between gap-2 py-3';const title=document.createElement('span');title.className='text-sm text-white';title.textContent=event.title;const meta=document.createElement('span');meta.className='tech text-xs text-slate-400';meta.textContent=`${dateLabel(event.eventDate)} · ${states[event.status]}`;row.append(title,meta);root.append(row)})}
-      function currentEvents(){return events.filter(event=>filter==='all'||(event.cellIds||[]).map(Number).includes(Number(filter)))}
-      function renderCalendar(){const grid=$('calendar-grid'),year=month.getFullYear(),m=month.getMonth(),first=new Date(year,m,1),offset=(first.getDay()+6)%7,days=new Date(year,m+1,0).getDate();$('month-label').textContent=new Intl.DateTimeFormat('es-CL',{month:'long',year:'numeric'}).format(first);grid.replaceChildren();for(let i=0;i<offset;i++){const blank=document.createElement('div');blank.className='calendar-cell border-b border-r border-slate-800 bg-slate-950/30';grid.append(blank)}for(let day=1;day<=days;day++){const cell=document.createElement('div');cell.className='calendar-cell overflow-hidden border-b border-r border-slate-800 p-1 sm:p-2';const num=document.createElement('div');num.className='tech mb-1 text-xs text-slate-500';num.textContent=String(day);cell.append(num);const iso=`${year}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;currentEvents().filter(event=>event.eventDate===iso).forEach(event=>{const item=document.createElement('div');item.className='mb-1 truncate rounded bg-cyan/10 px-1 py-1 text-[10px] text-cyan';item.title=event.title;item.textContent=event.title;cell.append(item)});if(googleCalendarEvents.some(item => item.date === iso || item.start.startsWith(iso))){const item=document.createElement('div');item.className='mt-1 truncate rounded bg-green/10 px-1 py-1 text-[10px] text-green';item.textContent='Google';cell.append(item)}};grid.append(cell)}}
-      function renderGoogleCalendarEvents(){const root=$('google-calendar-events');root.replaceChildren();if(!googleCalendarEvents.length){const p=document.createElement('p');p.className='text-sm text-slate-400';p.textContent=googleCalendarConnected ? 'No hay eventos personales próximos en Google Calendar.' : 'Conecta tu Google Calendar personal para ver tus eventos aquí.';root.append(p);return}googleCalendarEvents.slice(0,5).forEach(item=>{const row=document.createElement('div');row.className='rounded-xl border border-slate-800 bg-slate-950/40 p-3';const t=document.createElement('p');t.className='text-sm font-medium text-white';t.textContent=item.title;const d=document.createElement('p');d.className='mt-1 text-xs text-slate-400';const start=item.allDay?dateOnly(item.start):new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',dateStyle:'medium',timeStyle:'short'}).format(new Date(item.start));d.textContent=start + (item.location ? ` · ${item.location}` : '');row.append(t,d);root.append(row)})}
-      function renderEvents(){updateOverview();fillEventOptions();renderGoogleCalendarEvents();const root=$('events-list');root.replaceChildren();if(view==='calendar'){$('calendar-view').classList.remove('hidden');root.classList.add('hidden');renderCalendar();return}$('calendar-view').classList.add('hidden');root.classList.remove('hidden');let rows=currentEvents();if(view==='finance')rows=rows.slice().sort((a,b)=>(Number(b.incomeClp)-Number(b.expenseClp))-(Number(a.incomeClp)-Number(a.expenseClp));if(!rows.length){const p=document.createElement('p');p.className='p-5 text-sm text-slate-400';p.textContent='No hay eventos para esta vista.';root.append(p);return}rows.forEach(event=>{const article=document.createElement('article');article.className='grid gap-3 p-4 sm:grid-cols-[130px_1fr_auto] sm:items-start sm:p-5';const date=document.createElement('div');date.className='tech text-sm text-cyan';date.textContent=dateLabel(event.eventDate);const body=document.createElement('div');body.className='min-w-0';const title=document.createElement('h3');title.className='font-semibold text-white';title.textContent=event.title;const meta=document.createElement('p');meta.className='mt-1 text-xs text-slate-400';meta.textContent=[event.location,states[event.status],(event.cellIds||[]).map(id=>`CELL_0${id} ${cells[id]}`).join(' · ')].filter(Boolean).join(' · ');const notes=document.createElement('p');notes.className='mt-2 whitespace-pre-wrap text-sm text-slate-300';notes.textContent=event.notes||'Sin notas adicionales';const finance=document.createElement('div');finance.className='mt-3 flex flex-wrap gap-2 text-xs';[['Ingresos',event.incomeClp,'text-green border-green/30'],['Egresos',event.expenseClp,'text-orange border-orange/30'],['Balance',Number(event.incomeClp||0)-Number(event.expenseClp||0),'text-slate-300 border-slate-700']].forEach(([label,value,classes])=>{const span=document.createElement('span');span.className=`rounded-md border px-2 py-1 ${classes}`;span.textContent=`${label} ${money.format(Number(value)||0)}`;finance.append(span)});body.append(title,meta,notes,finance);const actions=document.createElement('div');actions.className='flex gap-2 sm:justify-end';const edit=document.createElement('button');edit.type='button';edit.className='rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-cyan';edit.textContent='Editar';edit.onclick=()=>fillForm(event);const remove=document.createElement('button');remove.type='button';remove.className='rounded-lg border border-slate-700 px-3 py-2 text-xs text-orange';remove.textContent='Eliminar';remove.onclick=async()=>{if(!confirm(`¿Eliminar «${event.title}»? La acción quedará en la bitácora.`))return;try{await request(`${EVENTS_API}/${event.id}`,{method:'DELETE',body:JSON.stringify({author:$('log-author').value.trim()||'Equipo'})});events=events.filter(item=>item.id!==event.id);renderEvents();await loadLogs();setEventStatus('Evento eliminado; quedó registro en la bitácora.')}catch(error){setEventStatus(error.message,true)}};actions.append(edit,remove);article.append(date,body,actions);root.append(article)})}
-      function renderLogs(){const root=$('log-list');root.replaceChildren();if(!entries.length){const p=document.createElement('p');p.className='text-sm text-slate-400';p.textContent='Todavía no hay movimientos registrados.';root.append(p);return}entries.forEach(item=>{const card=document.createElement('article');card.className='rounded-xl border border-slate-800 border-l-4 border-l-cyan bg-slate-950/55 p-4';const head=document.createElement('div');head.className='flex flex-wrap items-center justify-between gap-2';const author=document.createElement('strong');author.className='text-sm text-white';author.textContent=item.author||'Equipo';const time=document.createElement('time');time.className='tech text-xs text-slate-400';const d=new Date(item.createdAt);time.textContent=Number.isNaN(d.getTime())?'':new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',dateStyle:'medium',timeStyle:'short'}).format(d);head.append(author,time);const tags=document.createElement('div');tags.className='mt-2 flex flex-wrap gap-2';const cell=document.createElement('span');cell.className='rounded border border-cyan/30 px-2 py-1 text-xs text-cyan';cell.textContent=`CELL_0${item.cellId} · ${cells[item.cellId]||''}`;tags.append(cell);if(item.eventTitle){const ev=document.createElement('span');ev.className='rounded border border-orange/30 px-2 py-1 text-xs text-orange';ev.textContent=`EVENTO · ${item.eventTitle}`;tags.append(ev)}if(item.action&&item.action!=='note'){const action=document.createElement('span');action.className='rounded border border-slate-700 px-2 py-1 text-xs text-slate-300';action.textContent={created:'EVENTO CREADO',updated:'EVENTO ACTUALIZADO',deleted:'EVENTO ELIMINADO'}[item.action]||item.action;tags.append(action)}const message=document.createElement('p');message.className='mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-200';message.textContent=item.message;card.append(head,tags,message);root.append(card)})}
-      async function loadLogs(){if(!password)return;const cell=$('log-filter').value,query=cell?`?cellId=${encodeURIComponent(cell)}`:'';try{const data=await request(LOG_API+query);entries=data.entries||[];renderLogs()}catch(error){$('log-list').replaceChildren();const p=document.createElement('p');p.className='text-sm text-orange';p.textContent=error.message;$('log-list').append(p)}}
-      async function loadGoogleCalendar(){if(!password)return;try{const status=await request(`${GOOGLE_CALENDAR_API}/status`);if(!status.connected){googleCalendarConnected=false;googleCalendarEvents=[];setGoogleCalendarStatus('Sin conectar');renderGoogleCalendarEvents();return}const data=await request(`${GOOGLE_CALENDAR_API}/events`);googleCalendarEvents=(data.events||[]).map(event=>({title:event.title,date:(event.start||'').slice(0,10),start:event.start,end:event.end,allDay:event.allDay,location:event.location,description:event.description,htmlLink:event.htmlLink}));googleCalendarConnected=true;setGoogleCalendarStatus('Conectado');renderGoogleCalendarEvents();if(view==='calendar')renderCalendar();}catch(error){googleCalendarConnected=false;googleCalendarEvents=[];setGoogleCalendarStatus('Error de conexión',true);renderGoogleCalendarEvents();}}
-      async function load(){if(!password){$('connection').textContent='DESCONECTADO';setEventStatus('Ingresa la contraseña privada configurada en Render.',true);return}$('connection').textContent='CONECTANDO…';try{const data=await request(EVENTS_API);events=data.events||[];$('connection').textContent='BASE COMPARTIDA ONLINE';renderEvents();await loadLogs();await loadGoogleCalendar();setEventStatus('Agenda y células sincronizadas.')}catch(error){$('connection').textContent='SIN CONEXIÓN';setEventStatus(error.message,true);$('events-list').replaceChildren();const p=document.createElement('p');p.className='p-5 text-sm text-orange';p.textContent=error.message;$('events-list').append(p)}}
-      function clearForm(){editing=null;$('event-form').reset();$('event-income').value='0';$('event-expense').value='0';$('event-state').value='planned';$('event-date').value=new Date().toISOString().slice(0,10);$('cancel-edit').classList.add('hidden')}
-      function fillForm(event){editing=event.id;$('event-title').value=event.title;$('event-date').value=event.eventDate;$('event-state').value=event.status;$('event-location').value=event.location||'';$('event-income').value=event.incomeClp||0;$('event-expense').value=event.expenseClp||0;$('event-notes').value=event.notes||'';document.querySelectorAll('[name="cells"]').forEach(box=>box.checked=(event.cellIds||[]).map(Number).includes(Number(box.value)));$('save-event').textContent='Guardar cambios ↗';$('cancel-edit').classList.remove('hidden');$('event-form').scrollIntoView({behavior:'smooth',block:'start'})}
-      document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>activateTab(button.dataset.tab)));document.querySelectorAll('[data-open-tab]').forEach(button=>button.addEventListener('click',()=>activateTab(button.dataset.openTab)));
-      $('connect').onclick=()=>{const value=$('dashboard-password').value.trim();if(!value){setEventStatus('Escribe la contraseña configurada en Render.',true);return}password=value;try{sessionStorage.setItem(KEY,value)}catch(_){}$('dashboard-password').value='';load()};$('dashboard-password').addEventListener('keydown',event=>{if(event.key==='Enter')$('connect').click()});
-      $('event-form').addEventListener('submit',async event=>{event.preventDefault();if(!password){setEventStatus('Conecta primero con la contraseña privada.',true);return}const cellIds=[...document.querySelectorAll('[name="cells"]:checked')].map(box=>Number(box.value));if(!cellIds.length){setEventStatus('Vincula el evento con una o más células.',true);return}const payload={title:$('event-title').value.trim(),eventDate:$('event-date').value,status:$('event-state').value,cellIds,location:$('event-location').value.trim(),incomeClp:Number($('event-income').value||0),expenseClp:Number($('event-expense').value||0),notes:$('event-notes').value.trim(),author:$('log-author').value.trim()||'Equipo'};$('save-event').disabled=true;try{const data=await request(editing?`${EVENTS_API}/${editing}`:EVENTS_API,{method:editing?'PUT':'POST',body:JSON.stringify(payload)});if(editing)events=events.map(item=>String(item.id)===String(editing)?data.event:item);else events.push(data.event);clearForm();renderEvents();await loadLogs();setEventStatus('Evento distribuido y registrado en la bitácora.')}catch(error){setEventStatus(error.message,true)}finally{$('save-event').disabled=false}});$('cancel-edit').onclick=()=>{clearForm();setEventStatus('Edición cancelada.')};
-      document.querySelectorAll('[data-cell]').forEach(button=>button.addEventListener('click',()=>{filter=button.dataset.cell;$('agenda-filter').value=filter;document.querySelectorAll('[data-cell]').forEach(card=>card.setAttribute('aria-pressed',String(card===button)));activateTab('agenda');renderEvents()}));$('agenda-filter').addEventListener('change',()=>{filter=$('agenda-filter').value;renderEvents()});
-      document.querySelectorAll('.view-btn').forEach(button=>button.addEventListener('click',()=>{view=button.dataset.view;document.querySelectorAll('.view-btn').forEach(item=>{const active=item===button;item.setAttribute('aria-pressed',String(active));item.className=`view-btn rounded-lg border px-3 py-2 text-xs ${active?'border-cyan/40 bg-cyan/10 text-cyan':'border-slate-700 text-slate-300'}`});renderEvents()}));$('month-prev').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);renderCalendar()};$('month-next').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);renderCalendar()};
-      $('log-form').addEventListener('submit',async event=>{event.preventDefault();if(!password){setLogStatus('Conecta primero con la contraseña privada.',true);return}const payload={author:$('log-author').value.trim(),cellId:Number($('log-cell').value),eventId:$('log-event').value||null,message:$('log-message').value.trim()};$('save-log').disabled=true;try{await request(LOG_API,{method:'POST',body:JSON.stringify(payload)});$('log-message').value='';await loadLogs();setLogStatus('Entrada guardada en la bitácora compartida.')}catch(error){setLogStatus(error.message,true)}finally{$('save-log').disabled=false}});$('refresh-log').onclick=loadLogs;$('log-filter').onchange=loadLogs;
-      const chatLog=$('chat-log'),prompt=$('prompt'),send=$('send-btn');function addMessage(role,text){const bubble=document.createElement('div');bubble.className=role==='user'?'ml-auto max-w-3xl whitespace-pre-wrap rounded-xl border border-slate-700 bg-slate-900 p-3 text-sm text-white':'max-w-3xl whitespace-pre-wrap rounded-xl border border-cyan/15 bg-cyan/5 p-3 text-sm text-slate-200';const label=document.createElement('strong');label.className='tech mr-2 text-cyan';label.textContent=role==='user'?'TÚ':'ASISTENTE';const content=document.createElement('span');content.textContent=text;bubble.append(label,content);chatLog.append(bubble);chatLog.scrollTop=chatLog.scrollHeight}function setChatStatus(text,error=false){$('api-status').textContent=text;$('api-status').className=`mt-2 text-[11px] ${error?'text-orange':'text-slate-400'}`}$('chat-form').addEventListener('submit',async event=>{event.preventDefault();const message=prompt.value.trim();if(!message)return;if(!password){setChatStatus('Conecta primero con la contraseña privada.',true);$('dashboard-password').focus();return}send.disabled=true;const provider=$('provider').value;addMessage('user',message);prompt.value='';try{const data=await request(CHAT_API,{method:'POST',body:JSON.stringify({provider,message,conversationId,selectedCell:filter})});if(typeof data.reply!=='string')throw new Error('Respuesta inválida del servicio.');addMessage('assistant',data.reply);if(data.conversationId){conversationId=data.conversationId;try{localStorage.setItem(CONV_KEY,conversationId)}catch(_){}}setChatStatus(`Respuesta recibida de ${provider} con contexto ${filter==='all'?'general':`de ${cells[filter]}`}.`)}catch(error){addMessage('assistant',`No se pudo completar la consulta: ${error.message}`);setChatStatus(error.message,true)}finally{send.disabled=false}});
-      $('connect-google-calendar').addEventListener('click',()=>{if(!password){setEventStatus('Conecta primero con la contraseña privada.',true);return}const returnUri=encodeURIComponent(window.location.href.split('#')[0]);window.location.href=`${GOOGLE_CALENDAR_API}/auth-url?redirect_uri=${returnUri}`});
-      const googleCalendarParam=new URLSearchParams(window.location.search).get('googleCalendar');if(googleCalendarParam==='connected'){setGoogleCalendarStatus('Conectado');googleCalendarConnected=true;}
-      if(password)load();function tick(){$('clock').textContent=new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date())}tick();setInterval(tick,1000);
-    })();
-  </script>
+
+    <!-- MODAL: CREAR EVENTO -->
+    <div id="eventModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel max-w-xl w-full rounded-2xl border border-slate-700 overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
+                <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-plus text-emerald-400"></i> Registrar Nuevo Evento / Arriendo
+                </h3>
+                <button onclick="toggleModal('eventModal', false)" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="eventForm" onsubmit="handleCreateEvent(event)" class="p-5 space-y-4 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-300 font-medium mb-1">Nombre del Evento / Cliente</label>
+                        <input type="text" id="evTitle" required placeholder="Ej. Fiesta Privada o Arriendo DJ" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-medium mb-1">Lugar / Ubicación</label>
+                        <input type="text" id="evVenue" placeholder="Ej. Espacio Estancilla / Niebla" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-slate-300 font-medium mb-1">Fecha</label>
+                        <input type="date" id="evDate" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:border-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-medium mb-1">Célula Responsable</label>
+                        <select id="evCell" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:border-emerald-500 focus:outline-none">
+                            <option value="CELL_01">Célula 1: Operaciones</option>
+                            <option value="CELL_02">Célula 2: Finanzas</option>
+                            <option value="CELL_03">Célula 3: Marketing</option>
+                            <option value="CELL_04">Célula 4: Calidad</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-medium mb-1">Estado</label>
+                        <select id="evStatus" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:border-emerald-500 focus:outline-none">
+                            <option value="CONFIRMED">Confirmado</option>
+                            <option value="PENDING">Cotización / Pendiente</option>
+                            <option value="COMPLETED">Finalizado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">Reserva de Inventario</label>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-3 rounded-xl border border-slate-800 text-[11px]">
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" name="evGear" value="JBL EON 615 (x2)" class="rounded border-slate-700 text-emerald-500 focus:ring-0"> 2x JBL EON 615
+                        </label>
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" name="evGear" value="Wharfedale Pro (x2)" class="rounded border-slate-700 text-emerald-500 focus:ring-0"> 2x Wharfedale Pro
+                        </label>
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" name="evGear" value="Behringer Xenyx 1002" class="rounded border-slate-700 text-emerald-500 focus:ring-0"> Behringer Xenyx 1002
+                        </label>
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" name="evGear" value="Traktor S4 MK3" class="rounded border-slate-700 text-emerald-500 focus:ring-0"> Traktor S4 MK3
+                        </label>
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" name="evGear" value="Micrófonos Shure" class="rounded border-slate-700 text-emerald-500 focus:ring-0"> Micrófonos Shure
+                        </label>
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" name="evGear" value="Atriles K&M" class="rounded border-slate-700 text-emerald-500 focus:ring-0"> Atriles K&M
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <div>
+                        <label class="block text-slate-300 font-medium mb-1">Ingreso Acordado (CLP)</label>
+                        <input type="number" id="evRevenue" placeholder="150000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-emerald-400 font-mono focus:border-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-medium mb-1">Gastos Estimados (CLP)</label>
+                        <input type="number" id="evExpenses" placeholder="30000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-rose-400 font-mono focus:border-rose-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
+                    <button type="button" onclick="toggleModal('eventModal', false)" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-600/20">Guardar Evento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT LÓGICO DE LA APLICACIÓN -->
+    <script>
+        let state = {
+            events: JSON.parse(localStorage.getItem('ss_events')) || [
+                {
+                    id: '1',
+                    title: 'Show Espacio Estancilla',
+                    venue: 'Valdivia',
+                    date: '2026-11-21',
+                    cell: 'CELL_01',
+                    status: 'CONFIRMED',
+                    gear: ['JBL EON 615 (x2)', 'Behringer Xenyx 1002'],
+                    revenue: 250000,
+                    expenses: 40000
+                }
+            ],
+            logbook: JSON.parse(localStorage.getItem('ss_logbook')) || [
+                { id: '1', cell: 'CELL_04', text: 'Revisión de protocolo de seguridad MOP T-350 completada.', timestamp: '09/11/2026 14:00' }
+            ],
+            selectedModel: 'gemini',
+            activeFilter: 'ALL'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderEvents();
+            renderLogbook();
+            calculateFinancials();
+            const savedUrl = localStorage.getItem('ss_api_url');
+            if(savedUrl) document.getElementById('apiBaseInput').value = savedUrl;
+        });
+
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if(show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        async function checkConnection() {
+            const apiBase = document.getElementById('apiBaseInput').value.trim();
+            const passcode = document.getElementById('passcodeInput').value.trim();
+            const badge = document.getElementById('statusBadge');
+            const text = document.getElementById('statusText');
+
+            if(!apiBase) return alert('Ingresa la URL de tu backend en Render.');
+
+            localStorage.setItem('ss_api_url', apiBase);
+            localStorage.setItem('ss_passcode', passcode);
+
+            text.innerText = 'CONECTANDO...';
+            badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono';
+
+            try {
+                const res = await fetch(`${apiBase}/api/health`);
+                if(res.ok) {
+                    text.innerText = 'ONLINE';
+                    badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono';
+                } else {
+                    throw new Error('Servidor offline');
+                }
+            } catch(e) {
+                text.innerText = 'DESCONECTADO';
+                badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono';
+                alert('No se pudo conectar al backend. Verifica que esté activo en Render o que la URL sea la correcta.');
+            }
+        }
+
+        function handleCreateEvent(e) {
+            e.preventDefault();
+            const gearArr = Array.from(document.querySelectorAll('input[name="evGear"]:checked')).map(cb => cb.value);
+
+            const newEvent = {
+                id: Date.now().toString(),
+                title: document.getElementById('evTitle').value,
+                venue: document.getElementById('evVenue').value || 'Por definir',
+                date: document.getElementById('evDate').value,
+                cell: document.getElementById('evCell').value,
+                status: document.getElementById('evStatus').value,
+                gear: gearArr,
+                revenue: Number(document.getElementById('evRevenue').value) || 0,
+                expenses: Number(document.getElementById('evExpenses').value) || 0
+            };
+
+            state.events.unshift(newEvent);
+            saveState();
+            renderEvents();
+            calculateFinancials();
+            toggleModal('eventModal', false);
+            document.getElementById('eventForm').reset();
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('eventsContainer');
+            const filtered = state.activeFilter === 'ALL' 
+                ? state.events 
+                : state.events.filter(e => e.cell === state.activeFilter);
+
+            document.getElementById('eventCountBadge').innerText = `${filtered.length} eventos`;
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<div class="glass-panel p-8 text-center text-slate-400 rounded-2xl border border-dashed border-slate-800"><p class="text-sm">No hay eventos agendados.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(ev => {
+                const statusColors = {
+                    'CONFIRMED': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+                    'PENDING': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+                    'COMPLETED': 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                };
+
+                return `
+                    <div class="glass-panel p-4 rounded-xl border border-slate-800 hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded ${statusColors[ev.status]} border">${ev.status}</span>
+                                <span class="text-xs text-slate-400 font-mono"><i class="fa-regular fa-calendar"></i> ${ev.date}</span>
+                                <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-800">${ev.cell}</span>
+                            </div>
+                            <h4 class="font-bold text-white text-sm">${ev.title}</h4>
+                            <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot text-rose-400"></i> ${ev.venue}</p>
+                            ${ev.gear.length ? `<div class="text-[11px] text-slate-400 flex flex-wrap gap-1 mt-1">
+                                ${ev.gear.map(g => `<span class="bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-slate-300">${g}</span>`).join('')}
+                            </div>` : ''}
+                        </div>
+                        <div class="text-right flex sm:flex-col items-center sm:items-end justify-between border-t sm:border-t-0 border-slate-800 pt-2 sm:pt-0 font-mono">
+                            <div class="text-emerald-400 text-sm font-bold">+$${ev.revenue.toLocaleString('es-CL')}</div>
+                            <div class="text-rose-400 text-xs">-$${ev.expenses.toLocaleString('es-CL')}</div>
+                            <button onclick="deleteEvent('${ev.id}')" class="text-slate-600 hover:text-rose-400 text-xs mt-1">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteEvent(id) {
+            if(confirm('¿Eliminar este evento de la agenda?')) {
+                state.events = state.events.filter(e => e.id !== id);
+                saveState();
+                renderEvents();
+                calculateFinancials();
+            }
+        }
+
+        function filterEvents(cell) {
+            state.activeFilter = cell;
+            renderEvents();
+        }
+
+        function calculateFinancials() {
+            const rev = state.events.reduce((sum, e) => sum + (e.revenue || 0), 0);
+            const exp = state.events.reduce((sum, e) => sum + (e.expenses || 0), 0);
+            const net = rev - exp;
+            const maint = rev * 0.20;
+
+            document.getElementById('metricRevenue').innerText = `$${rev.toLocaleString('es-CL')} CLP`;
+            document.getElementById('metricExpenses').innerText = `$${exp.toLocaleString('es-CL')} CLP`;
+            document.getElementById('metricNet').innerText = `$${net.toLocaleString('es-CL')} CLP`;
+            document.getElementById('metricMaintenance').innerText = `$${maint.toLocaleString('es-CL')} CLP`;
+        }
+
+        function addLogEntry() {
+            const input = document.getElementById('logTextInput');
+            const cell = document.getElementById('logCellSelect').value;
+            if(!input.value.trim()) return;
+
+            const entry = {
+                id: Date.now().toString(),
+                cell,
+                text: input.value.trim(),
+                timestamp: new Date().toLocaleString('es-CL')
+            };
+
+            state.logbook.unshift(entry);
+            saveState();
+            renderLogbook();
+            input.value = '';
+        }
+
+        function renderLogbook() {
+            const container = document.getElementById('logbookFeed');
+            container.innerHTML = state.logbook.map(item => `
+                <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80 flex items-start gap-2">
+                    <span class="font-mono text-[9px] bg-slate-800 text-cyan-300 px-1.5 py-0.5 rounded border border-slate-700">${item.cell}</span>
+                    <div class="flex-1">
+                        <p class="text-slate-300 text-xs">${item.text}</p>
+                        <span class="text-[9px] text-slate-500 font-mono">${item.timestamp}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectAIModel(model) {
+            state.selectedModel = model;
+            const bGem = document.getElementById('btnModelGemini');
+            const bCla = document.getElementById('btnModelClaude');
+            const label = document.getElementById('activeModelLabel');
+
+            if(model === 'gemini') {
+                bGem.className = 'px-3 py-1 rounded-lg text-emerald-400 bg-slate-800 transition-all flex items-center gap-1';
+                bCla.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1';
+                label.innerText = 'Modelo: Gemini REST';
+            } else {
+                bCla.className = 'px-3 py-1 rounded-lg text-cyan-400 bg-slate-800 transition-all flex items-center gap-1';
+                bGem.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1';
+                label.innerText = 'Modelo: Claude Sonnet';
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const chatMessages = document.getElementById('chatMessages');
+
+            chatMessages.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-emerald-600 text-white rounded-xl p-3 max-w-[85%] text-xs shadow-md">${text}</div>
+                </div>
+            `;
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            const loadingId = 'loading-' + Date.now();
+            chatMessages.innerHTML += `
+                <div id="${loadingId}" class="flex justify-start">
+                    <div class="bg-slate-900 border border-slate-800 text-slate-400 rounded-xl p-3 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-spinner animate-spin text-emerald-400"></i> Consultando a la IA (${state.selectedModel})...
+                    </div>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            const apiBase = document.getElementById('apiBaseInput').value.trim() || '[suspicious link removed]';
+            const passcode = document.getElementById('passcodeInput').value.trim() || localStorage.getItem('ss_passcode') || '';
+
+            try {
+                const response = await fetch(`${apiBase}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-app-passcode': passcode
+                    },
+                    body: JSON.stringify({
+                        model: state.selectedModel,
+                        messages: [{ role: 'user', content: text }],
+                        contextPayload: {
+                            events: state.events,
+                            logbook: state.logbook,
+                            financials: {
+                                revenue: state.events.reduce((s, e) => s + e.revenue, 0),
+                                expenses: state.events.reduce((s, e) => s + e.expenses, 0),
+                                maintenanceFund: state.events.reduce((s, e) => s + e.revenue, 0) * 0.20
+                            }
+                        }
+                    })
+                });
+
+                document.getElementById(loadingId)?.remove();
+
+                if(!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error || errData.details || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                chatMessages.innerHTML += `
+                    <div class="flex justify-start">
+                        <div class="bg-slate-900/90 border border-slate-800 text-slate-200 rounded-xl p-3.5 max-w-[90%] text-xs space-y-1 shadow-lg">
+                            <div class="font-mono text-[10px] text-emerald-400 flex items-center justify-between">
+                                <span>${state.selectedModel.toUpperCase()} AI</span>
+                                <span>${new Date().toLocaleTimeString('es-CL')}</span>
+                            </div>
+                            <div class="whitespace-pre-line leading-relaxed">${data.reply}</div>
+                        </div>
+                    </div>
+                `;
+            } catch(err) {
+                document.getElementById(loadingId)?.remove();
+                chatMessages.innerHTML += `
+                    <div class="flex justify-start">
+                        <div class="bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl p-3 text-xs">
+                            <strong>Error:</strong> ${err.message}. Asegúrate de ingresar tu contraseña y que el backend en Render esté activo.
+                        </div>
+                    </div>
+                `;
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function saveState() {
+            localStorage.setItem('ss_events', JSON.stringify(state.events));
+            localStorage.setItem('ss_logbook', JSON.stringify(state.logbook));
+        }
+    </script>
 </body>
 </html>
