@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SET & SOUND - Cloud-Synced Dashboard SpA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0a0e17',
+                        cardBg: '#111827',
+                        neonCyan: '#00f0ff',
+                        neonOrange: '#ff5500',
+                        neonGreen: '#00ff66',
+                        borderGlow: '#1f293d'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0e17;
+            color: #e2e8f0;
+        }
+        .tech-font {
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+        }
+        .glow-orange {
+            box-shadow: 0 0 20px rgba(255, 85, 0, 0.15);
+            border: 1px solid rgba(255, 85, 0, 0.35);
+        }
+        .panel-card {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(10, 14, 23, 0.98) 100%);
+            border: 1px solid #1f293d;
+            backdrop-filter: blur(12px);
+        }
+        .tab-btn.active {
+            background-color: rgba(0, 240, 255, 0.1);
+            border-color: #00f0ff;
+            color: #00f0ff;
+        }
+        @keyframes wave {
+            0%, 100% { height: 4px; }
+            50% { height: 26px; }
+        }
+        .wave-bar {
+            animation: wave 1.2s infinite ease-in-out;
+        }
+        .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.6s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.8s; }
+        @keyframes syncPulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+        .syncing {
+            animation: syncPulse 0.8s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col justify-between">
+
+    <!-- Header / Barra de Comando Cloud-Synced -->
+    <header class="panel-card rounded-xl p-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 glow-cyan">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 bg-neonCyan rounded-full animate-ping" id="status-dot"></div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wider text-white tech-font">SET & SOUND <span class="text-neonCyan">PRODUCCIONES SpA</span></h1>
+                <p class="text-xs text-slate-400">CEO: Sebastián Leyton | Nodo Central Valdivia[cite: 1, 10]</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4 text-sm tech-font flex-wrap justify-end">
+            <div class="bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800 flex items-center gap-2">
+                <span class="text-slate-400">CLOUD SYNC:</span>
+                <span id="sync-status" class="text-neonGreen font-bold">CONECTADO</span>
+            </div>
+            <div class="bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800 text-neonCyan" id="live-clock">
+                00:00:00
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegación por 5 Pestañas Principales -->
+    <nav class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6 tech-font text-xs">
+        <button onclick="switchTab('cells')" id="btn-cells" class="tab-btn active panel-card p-3 rounded-xl border border-slate-700 text-slate-300 font-semibold transition text-center">
+            1. CÉLULAS [4]
+        </button>
+        <button onclick="switchTab('agenda')" id="btn-agenda" class="tab-btn panel-card p-3 rounded-xl border border-slate-700 text-slate-300 font-semibold transition text-center">
+            2. AGENDA
+        </button>
+        <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn panel-card p-3 rounded-xl border border-slate-700 text-slate-300 font-semibold transition text-center">
+            3. GOOGLE CAL
+        </button>
+        <button onclick="switchTab('mail')" id="btn-mail" class="tab-btn panel-card p-3 rounded-xl border border-slate-700 text-slate-300 font-semibold transition text-center">
+            4. CORREOS / OOH
+        </button>
+        <button onclick="switchTab('gantt')" id="btn-gantt" class="tab-btn panel-card p-3 rounded-xl border border-slate-700 text-slate-300 font-semibold transition text-center sm:col-span-1 col-span-2">
+            5. CARTA GANTT (6 MESES)
+        </button>
+    </nav>
+
+    <!-- CONTENIDO DE LAS PESTAÑAS -->
+    <main class="flex-grow mb-6">
+        
+        <!-- PESTAÑA 1: CÉLULAS OPERATIVAS -->
+        <div id="tab-cells" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Célula 1 -->
+                <div class="panel-card rounded-xl p-5 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+                        <h2 class="font-bold text-neonCyan flex items-center gap-2 tech-font text-lg"><span>⚙️</span> CÉLULA DE OPERACIONES</h2>
+                        <span class="text-xs bg-cyan-950 text-neonCyan px-2 py-0.5 rounded border border-cyan-800">Logística</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-2">Inventario base oficial y arriendos operativos:</p>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li>2x JBL EON 615 & 4x Wharfedale Pro[cite: 9]</li>
+                        <li>Consola Behringer Xenyx 1002 & Shure SM57/SV200[cite: 9]</li>
+                        <li>Jueves 12 Nov: Arriendo Traktor S4 ($60.000 CLP)[cite: 1, 2]</li>
+                    </ul>
+                </div>
+                <!-- Célula 2 -->
+                <div class="panel-card rounded-xl p-5 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+                        <h2 class="font-bold text-neonOrange flex items-center gap-2 tech-font text-lg"><span>💰</span> CÉLULA FINANCIERA</h2>
+                        <span class="text-xs bg-amber-950 text-neonOrange px-2 py-0.5 rounded border border-amber-800">Caja & SpA</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-2">Control contable y formalización:</p>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li>Constitución SpA completada (Capital $2M)[cite: 2, 10]</li>
+                        <li>Fondo mantención (20%) y Fondo imprevistos (10%)[cite: 1, 9]</li>
+                        <li>Próximo: Inicio de actividades SII & Cuenta Corriente[cite: 1, 2]</li>
+                    </ul>
+                </div>
+                <!-- Célula 3 -->
+                <div class="panel-card rounded-xl p-5 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+                        <h2 class="font-bold text-neonCyan flex items-center gap-2 tech-font text-lg"><span>🎨</span> COMUNICACIONES & DISEÑO</h2>
+                        <span class="text-xs bg-cyan-950 text-neonCyan px-2 py-0.5 rounded border border-cyan-800">Media & OOH</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-2">Proyectos de difusión y publicidad:</p>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li>Campaña evento 21 Nov (Húsares de la Muerte)[cite: 1, 2]</li>
+                        <li>Propuestas enviadas a agencias OOH (Pantallas LED Ruta T-350)[cite: 1, 2]</li>
+                    </ul>
+                </div>
+                <!-- Célula 4 -->
+                <div class="panel-card rounded-xl p-5 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+                        <h2 class="font-bold text-neonOrange flex items-center gap-2 tech-font text-lg"><span>🔍</span> CONTROL DE PROTOCOLOS</h2>
+                        <span class="text-xs bg-amber-950 text-neonOrange px-2 py-0.5 rounded border border-amber-800">Check Final</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-2">Validación y seguridad operativa:</p>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li>Riders técnicos y Call Sheets[cite: 1]</li>
+                        <li>Normas viales MOP (Ruta T-350, Estancilla)[cite: 1, 2]</li>
+                        <li>Check final intercelular obligatorio[cite: 11]</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 2: AGENDA / CALENDARIO INTERCONECTADO -->
+        <div id="tab-agenda" class="panel-card rounded-xl p-5 hidden space-y-4">
+            <h2 class="text-lg font-bold text-neonCyan tech-font">📅 AGENDA INTERCONECTADA DE LA PRODUCTORA</h2>
+            <div class="space-y-3 text-sm">
+                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <span class="tech-font text-xs text-neonCyan">JUEVES 12 NOV</span>
+                        <p class="font-semibold text-white">Arriendo Express Controladora Traktor S4 ($60.000 CLP)[cite: 1, 2]</p>
+                    </div>
+                    <span class="text-xs bg-cyan-950 text-cyan px-2 py-1 rounded">Célula 1 & 2</span>
+                </div>
+                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <span class="tech-font text-xs text-neonOrange">VIERNES 14 NOV</span>
+                        <p class="font-semibold text-white">Revisión Física y Técnica de Inventario en Bodega[cite: 1, 2]</p>
+                    </div>
+                    <span class="text-xs bg-amber-950 text-orange px-2 py-1 rounded">Célula 1 & 4</span>
+                </div>
+                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 flex justify-between items-center border-l-4 border-l-neonCyan">
+                    <div>
+                        <span class="tech-font text-xs text-neonCyan">VIERNES 21 NOV 🔴</span>
+                        <p class="font-semibold text-white">Evento en Vivo: Húsares de la Muerte (Espacio Estancilla)[cite: 1, 2]</p>
+                    </div>
+                    <span class="text-xs bg-cyan-950 text-cyan px-2 py-1 rounded">Todas las Células</span>
+                </div>
+                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <span class="tech-font text-xs text-slate-400">22 AL 30 NOV</span>
+                        <p class="font-semibold text-white">Constitución SII & Cuenta Corriente Comercial[cite: 1, 2]</p>
+                    </div>
+                    <span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded">Célula 2</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 3: GOOGLE CALENDAR -->
+        <div id="tab-calendar" class="panel-card rounded-xl p-5 hidden space-y-4 text-center">
+            <h2 class="text-lg font-bold text-neonOrange tech-font">🗓️ GOOGLE CALENDAR & SYNC</h2>
+            <p class="text-sm text-slate-300">Sincronización activa con las cuentas corporativas y personales de la productora.</p>
+            <div class="bg-slate-900/80 p-6 rounded-xl border border-slate-800 max-w-md mx-auto space-y-3">
+                <div class="w-4 h-4 bg-neonGreen rounded-full mx-auto animate-ping"></div>
+                <p class="text-xs text-slate-400">Cuentas vinculadas: ignacioleyton.prod@gmail.com / sebaisazo@gmail.com[cite: 2]</p>
+                <button onclick="alert('Google Calendar sincronizado correctamente con los eventos de Estancilla.')" class="bg-cyan-950 hover:bg-cyan-900 text-neonCyan border border-cyan-800 px-4 py-2 rounded-lg text-xs font-semibold transition tech-font w-full">
+                    FORZAR SINCRONIZACIÓN DE CALENDARIO
+                </button>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 4: MÓDULO DE MAIL -->
+        <div id="tab-mail" class="panel-card rounded-xl p-5 hidden space-y-4">
+            <h2 class="text-lg font-bold text-neonCyan tech-font">✉️ MÓDULO DE CORREOS Y SEGUIMIENTO OOH</h2>
+            <p class="text-sm text-slate-300">Bandeja de salida y propuestas enviadas a agencias de publicidad exterior y SII.</p>
+            <div class="space-y-3 text-xs">
+                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-white">Destinatario: Agencias OOH (Massiva, Fullvision, Led Vía Pública, Global)[cite: 1, 2]</p>
+                        <p class="text-slate-400">Asunto: Propuesta de Terreno Comercial Pantalla LED (Ruta T-350, Estancilla)[cite: 1, 2]</p>
+                    </div>
+                    <span class="text-xs bg-cyan-950 text-neonGreen px-2.5 py-1 rounded border border-cyan-800">Enviado / Borradores Listos</span>
+                </div>
+                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-white">Destinatario: SII / BancoEstado[cite: 2]</p>
+                        <p class="text-slate-400">Asunto: Gestión de Inicio de Actividades y Boleta de Honorarios N°15 ($206.490)</p>
+                    </div>
+                    <span class="text-xs bg-amber-950 text-neonOrange px-2.5 py-1 rounded border border-amber-800">Pendiente / Alerta 15 Nov</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 5: CARTA GANTT A 6 MESES -->
+        <div id="tab-gantt" class="panel-card rounded-xl p-5 hidden space-y-4">
+            <h2 class="text-lg font-bold text-neonCyan tech-font">📊 CARTA GANTT OPERATIVA (NOV 2026 - ABR 2027)[cite: 1, 2, 10]</h2>
+            <div class="space-y-4 text-xs">
+                <!-- Etapa 1 -->
+                <div class="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-2">
+                    <div class="flex justify-between font-bold text-white">
+                        <span>ETAPA 1: PLANIFICACIÓN Y CAJA INMEDIATA (Noviembre 2026)[cite: 1, 2, 10]</span>
+                        <span class="text-neonOrange">90% Completado</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-neonOrange h-full" style="width: 90%;"></div>
+                    </div>
+                    <p class="text-slate-400">• Arriendo Traktor S4 (12 Nov)[cite: 1, 2] | • Validación inventario audio (JBL/Wharfedale)[cite: 1, 2] | • Envío de propuestas OOH a agencias[cite: 1, 2].</p>
+                </div>
+                <!-- Etapa 2 -->
+                <div class="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-2 border-l-4 border-l-neonCyan">
+                    <div class="flex justify-between font-bold text-white">
+                        <span>ETAPA 2: EJECUCIÓN Y FORMALIZACIÓN (Nov 2026 - Ene 2027)[cite: 1, 2, 10]</span>
+                        <span class="text-neonCyan">En Curso</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-neonCyan h-full" style="width: 40%;"></div>
+                    </div>
+                    <p class="text-slate-400">• Evento Húsares de la Muerte en Espacio Estancilla (21 Nov)[cite: 1, 2] | • Inicio de Actividades SII & Cuenta Corriente SpA[cite: 1, 2] | • Cartelera de Verano[cite: 1, 2].</p>
+                </div>
+                <!-- Etapa 3 -->
+                <div class="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-2">
+                    <div class="flex justify-between font-bold text-white">
+                        <span>ETAPA 3: TÉRMINO Y MANTENCIÓN (Febrero 2027)[cite: 1, 2, 10]</span>
+                        <span class="text-slate-400">Proyección</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-slate-600 h-full" style="width: 0%;"></div>
+                    </div>
+                    <p class="text-slate-400">• Cierre de ciclo estival en Estancilla[cite: 1, 2] | • Mantención preventiva del inventario técnico (JBL/Wharfedale)[cite: 1, 2] | • Auditoría tributaria.</p>
+                </div>
+                <!-- Etapa 4 -->
+                <div class="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-2">
+                    <div class="flex justify-between font-bold text-white">
+                        <span>ETAPA 4: ANÁLISIS Y ESCALABILIDAD (Marzo - Abril 2027)[cite: 1, 2, 10]</span>
+                        <span class="text-slate-400">Futuro</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-slate-600 h-full" style="width: 0%;"></div>
+                    </div>
+                    <p class="text-slate-400">• Post-mortem financiero anual[cite: 1, 2] | • Rediseño del Media Kit V2[cite: 1, 2] | • Evaluación de instalación de Pantallas LED (Ruta T-350)[cite: 1, 2].</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer / Panel de Control Cloud Sync -->
+    <footer class="panel-card rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 glow-orange">
+        <div class="flex items-center gap-4 w-full md:w-auto">
+            <div class="flex items-center gap-1 h-6">
+                <div class="w-1 bg-neonOrange wave-bar rounded-full"></div>
+                <div class="w-1 bg-neonCyan wave-bar rounded-full"></div>
+                <div class="w-1 bg-neonOrange wave-bar rounded-full"></div>
+                <div class="w-1 bg-neonCyan wave-bar rounded-full"></div>
+                <div class="w-1 bg-neonOrange wave-bar rounded-full"></div>
+            </div>
+            <div>
+                <p class="text-xs text-slate-400 tech-font">CLOUD-SYNC CORE AKTIV v3.0</p>
+                <p class="text-sm font-semibold text-white" id="sync-message">Interfaz unificada de 5 pestañas conectada.</p>
+            </div>
+        </div>
+        <div class="flex gap-2 w-full md:w-auto justify-end">
+            <button onclick="syncWithCloud()" id="sync-btn" class="bg-cyan-950 hover:bg-cyan-900 text-neonCyan border border-cyan-800 px-4 py-2 rounded-lg text-xs font-semibold transition tech-font">
+                SINCRONIZAR COMPONENTES
+            </button>
+            <button onclick="location.reload()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 px-4 py-2 rounded-lg text-xs font-semibold transition tech-font">
+                RECARGAR NODO
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        // Reloj en tiempo real
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString('es-CL');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Sistema de navegación por pestañas
+        function switchTab(tabName) {
+            const tabs = ['cells', 'agenda', 'calendar', 'mail', 'gantt'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`btn-${t}`).classList.remove('active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`btn-${tabName}`).classList.add('active');
+        }
+
+        // Función de Sincronización Cloud simulada
+        function syncWithCloud() {
+            const btn = document.getElementById('sync-btn');
+            const status = document.getElementById('sync-status');
+            const statusDot = document.getElementById('status-dot');
+            const syncMsg = document.getElementById('sync-message');
+            
+            btn.innerText = "SINCRONIZANDO...";
+            status.innerText = "ACTUALIZANDO...";
+            status.className = "text-neonOrange font-bold syncing";
+            statusDot.className = "w-3 h-3 bg-neonOrange rounded-full animate-ping";
+            syncMsg.innerText = "Actualizando datos de correo, Google Calendar y Carta Gantt...";
+
+            setTimeout(() => {
+                btn.innerText = "SINCRONIZAR COMPONENTES";
+                status.innerText = "ONLINE (SYNC OK)";
+                status.className = "text-neonGreen font-bold";
+                statusDot.className = "w-3 h-3 bg-neonCyan rounded-full animate-ping";
+                syncMsg.innerText = "Todas las pestañas sincronizadas con éxito.";
+                alert("¡Sincronización intercelular completada! Las 5 secciones están operando con la última información en tiempo real.");
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
